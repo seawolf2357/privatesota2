@@ -26,7 +26,7 @@ const friendli = createOpenAI({
   baseURL: friendliBaseUrl,
 });
 
-// Custom provider with Friendli integration for Yuri
+// Custom provider with Friendli integration for jetXA (formerly Yuri)
 export const myFriendliProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
@@ -38,9 +38,10 @@ export const myFriendliProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        // Yuri AI Assistant - Using Friendli AI (Original Discord model)
-        'chat-model': friendli(friendliModel),
-        'yuri-model': friendli(friendliModel), // Alias for Yuri
+        // jetXA Model - Advanced multilingual AI (Powered by Friendli AI)
+        'jetxa-model': friendli(friendliModel),
+        'chat-model': friendli(friendliModel), // Default chat model
+        'yuri-model': friendli(friendliModel), // Legacy alias for compatibility
         
         // Yuri Reasoning model with middleware
         'chat-model-reasoning': wrapLanguageModel({

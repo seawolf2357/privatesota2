@@ -1,105 +1,117 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
-
-import { saveChatModelAsCookie } from '@/app/(chat)/actions';
+import { useState } from 'react';
+import { ChevronDown, Check, Sparkles, Clock } from 'lucide-react';
+import { AI_MODELS, MODEL_CATEGORIES, type ModelCategory, getModelsByCategory, DEFAULT_MODEL_ID } from '@/lib/ai/models-config';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { Session } from 'next-auth';
-
-export function ModelSelector({
-  session,
-  selectedModelId,
-  className,
-}: {
-  session: Session;
+interface ModelSelectorProps {
   selectedModelId: string;
-} & React.ComponentProps<typeof Button>) {
-  const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  onModelChange: (modelId: string) => void;
+  className?: string;
+}
 
-  const userType = session.user.type;
-  const { availableChatModelIds } = entitlementsByUserType[userType];
-
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
-  );
-
-  const selectedChatModel = useMemo(
-    () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
-      ),
-    [optimisticModelId, availableChatModels],
-  );
-
+export function ModelSelector({ selectedModelId, onModelChange, className }: ModelSelectorProps) {
+  const [category, setCategory] = useState<ModelCategory>('all');
+  
+  const models = getModelsByCategory(category);
+  const selectedModel = AI_MODELS.find(m => m.id === selectedModelId) || AI_MODELS.find(m => m.id === DEFAULT_MODEL_ID)!;
+  
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        asChild
-        className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
-        )}
-      >
-        <Button
-          data-testid="model-selector"
-          variant="outline"
-          className="md:px-2 md:h-[34px]"
-        >
-          {selectedChatModel?.name}
-          <ChevronDownIcon />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[300px]">
-        {availableChatModels.map((chatModel) => {
-          const { id } = chatModel;
-
-          return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="min-w-[180px] justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{selectedModel.icon}</span>
+              <span className="font-medium">{selectedModel.name}</span>
+              {selectedModel.id === 'jetxa-model' && (
+                <Badge variant="default" className="ml-1 px-1 py-0 text-xs">Active</Badge>
+              )}
+            </div>
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[320px]">
+          <DropdownMenuLabel className="flex items-center justify-between">
+            <span>Select AI Model</span>
+            <div className="flex gap-1">
+              {MODEL_CATEGORIES.map(cat => (
+                <Button
+                  key={cat.value}
+                  variant={category === cat.value ? "default" : "ghost"}
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCategory(cat.value);
+                  }}
+                >
+                  {cat.label}
+                </Button>
+              ))}
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          
+          {models.map((model) => (
             <DropdownMenuItem
-              data-testid={`model-selector-item-${id}`}
-              key={id}
-              onSelect={() => {
-                setOpen(false);
-
-                startTransition(() => {
-                  setOptimisticModelId(id);
-                  saveChatModelAsCookie(id);
-                });
-              }}
-              data-active={id === optimisticModelId}
-              asChild
+              key={model.id}
+              onClick={() => model.available && onModelChange(model.id)}
+              disabled={!model.available}
+              className={cn(
+                "flex items-start gap-3 p-3 cursor-pointer",
+                !model.available && "opacity-50 cursor-not-allowed"
+              )}
             >
-              <button
-                type="button"
-                className="gap-4 group/item flex flex-row justify-between items-center w-full"
-              >
-                <div className="flex flex-col gap-1 items-start">
-                  <div>{chatModel.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {chatModel.description}
-                  </div>
+              <span className="text-xl mt-0.5">{model.icon}</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{model.name}</span>
+                  {model.id === selectedModelId && model.available && (
+                    <Check className="h-4 w-4 text-primary" />
+                  )}
+                  {model.comingSoon && (
+                    <Badge variant="secondary" className="px-1.5 py-0 text-xs">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Coming Soon
+                    </Badge>
+                  )}
                 </div>
-
-                <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                  <CheckCircleFillIcon />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {model.description}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="outline" className="text-xs px-1.5 py-0">
+                    {model.category}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    Max {model.maxTokens} tokens
+                  </span>
                 </div>
-              </button>
+              </div>
             </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          ))}
+          
+          <DropdownMenuSeparator />
+          <div className="p-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              <span>jetXA is currently the only active model</span>
+            </div>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

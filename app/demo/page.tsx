@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { ChatSettings } from '@/components/chat-settings';
 import { FileUpload } from '@/components/file-upload';
 import { YuriBadge } from '@/components/yuri-badge';
+import { ModelSelector } from '@/components/model-selector';
+import { DEFAULT_MODEL_ID } from '@/lib/ai/models-config';
 
 export default function DemoPage() {
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,18 +110,28 @@ export default function DemoPage() {
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="border-b p-4">
-          <h1 className="text-xl font-semibold">Yuri Demo - 인증 없는 테스트</h1>
-          <p className="text-sm text-muted-foreground">
-            데이터베이스 없이 직접 AI와 대화할 수 있습니다.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-semibold">AI Chat Demo - jetXA Model</h1>
+              <p className="text-sm text-muted-foreground">
+                Advanced multilingual AI assistant powered by jetXA
+              </p>
+            </div>
+            <ModelSelector 
+              selectedModelId={selectedModelId}
+              onModelChange={setSelectedModelId}
+            />
+          </div>
         </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground mt-8">
-              <p>안녕하세요! 저는 Yuri(유리)입니다. 🌟</p>
-              <p>무엇을 도와드릴까요?</p>
+              <p className="text-2xl mb-2">🚀</p>
+              <p className="font-semibold">Welcome to jetXA AI Assistant</p>
+              <p className="text-sm">Advanced multilingual AI with Korean expertise</p>
+              <p className="text-sm mt-2">How can I help you today? / 무엇을 도와드릴까요?</p>
             </div>
           ) : (
             messages.map((msg, idx) => (
