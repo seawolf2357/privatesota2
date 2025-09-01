@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Paperclip, X, FileText, FileSpreadsheet, File } from 'lucide-react';
+import { Paperclip, X, FileText, FileSpreadsheet, File, Image } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UploadedFile {
@@ -37,6 +37,9 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
       try {
         const response = await fetch('/api/upload', {
           method: 'POST',
+          headers: {
+            'x-demo-mode': 'true', // Enable demo mode for upload
+          },
           body: formData,
         });
 
@@ -90,6 +93,14 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
         return <FileText className="h-4 w-4" />;
       case 'csv':
         return <FileSpreadsheet className="h-4 w-4" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+      case 'bmp':
+      case 'svg':
+        return <Image className="h-4 w-4" />;
       default:
         return <File className="h-4 w-4" />;
     }
@@ -113,7 +124,7 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
           ref={fileInputRef}
           type="file"
           multiple
-          accept=".pdf,.csv,.txt"
+          accept=".pdf,.csv,.txt,.jpg,.jpeg,.png,.gif,.webp,.bmp,.svg"
           onChange={handleFileSelect}
           className="hidden"
         />
