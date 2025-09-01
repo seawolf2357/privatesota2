@@ -87,17 +87,15 @@ export async function POST(request: NextRequest) {
         try {
           const base64 = buffer.toString('base64');
           const mimeType = `image/${fileExt === 'jpg' ? 'jpeg' : fileExt}`;
-          processedContent = `[Image File: ${file.name}]\nSize: ${(file.size / 1024).toFixed(2)} KB\nType: ${mimeType}\n`;
-          processedContent += `Data URL: data:${mimeType};base64,${base64.substring(0, 100)}...(base64 encoded)`;
           
-          // Store image metadata
-          processedContent = JSON.stringify({
-            type: 'image',
-            name: file.name,
-            size: file.size,
-            mimeType: mimeType,
-            dataUrl: `data:${mimeType};base64,${base64}`
-          });
+          // Create a description for AI to understand
+          processedContent = `[이미지 파일 업로드됨]
+파일명: ${file.name}
+크기: ${(file.size / 1024).toFixed(2)} KB
+형식: ${mimeType}
+설명: 사용자가 이미지 파일을 업로드했습니다. 이미지 내용에 대한 질문에 답변할 준비를 하세요.
+참고: 이 이미지는 base64로 인코딩되어 있으며, 시각적 분석이 필요한 경우 해당 내용을 설명할 수 있습니다.`;
+          
         } catch (error) {
           console.error('Image processing error:', error);
           processedContent = '이미지 파일을 처리할 수 없습니다.';

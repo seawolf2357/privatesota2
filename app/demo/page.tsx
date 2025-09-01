@@ -12,6 +12,7 @@ export default function DemoPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ filename: string; processedContent: string }>>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +24,15 @@ export default function DemoPage() {
     setIsLoading(true);
 
     try {
+      // Include file context if files are uploaded
+      let messageWithContext = userMessage;
+      if (uploadedFiles.length > 0) {
+        const fileContext = uploadedFiles.map(f => 
+          `[Uploaded File: ${f.filename}]\n${f.processedContent}`
+        ).join('\n\n');
+        messageWithContext = `${fileContext}\n\n사용자 질문: ${userMessage}`;
+      }
+
       // Call the demo chat API directly
       const response = await fetch('/api/demo-chat', {
         method: 'POST',
@@ -31,7 +41,7 @@ export default function DemoPage() {
         },
         body: JSON.stringify({
           message: {
-            content: userMessage,
+            content: messageWithContext,
           },
         }),
       });
@@ -102,7 +112,15 @@ export default function DemoPage() {
         
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">파일 업로드</h3>
-          <FileUpload sessionId="demo" />
+          <FileUpload 
+            sessionId="demo" 
+            onFilesChange={(files) => {
+              setUploadedFiles(files.map(f => ({
+                filename: f.filename,
+                processedContent: f.processedContent || ''
+              })));
+            }}
+          />
         </div>
       </div>
 
