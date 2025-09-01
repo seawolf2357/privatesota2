@@ -17,6 +17,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Skip auth for demo page
+  if (pathname.startsWith('/demo')) {
+    return NextResponse.next();
+  }
+
+  // TEMPORARY: Skip all auth in development
+  if (isDevelopmentEnvironment) {
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
@@ -47,6 +57,7 @@ export const config = {
     '/api/:path*',
     '/login',
     '/register',
+    '/demo',
 
     /*
      * Match all request paths except for the ones starting with:
