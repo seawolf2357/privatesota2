@@ -1,28 +1,102 @@
-hot-reloader-client.ts:124 Console was cleared
-client.ts:57 ./components/memory-panel.tsx:8:1
-Module not found: Can't resolve '@/components/ui/popover'
-   6 | import { ScrollArea } from '@/components/ui/scroll-area';
-   7 | import { Badge } from '@/components/ui/badge';
->  8 | import {
-     | ^^^^^^^^
->  9 |   Popover,
-     | ^^^^^^^^^^
-> 10 |   PopoverContent,
-     | ^^^^^^^^^^
-> 11 |   PopoverTrigger,
-     | ^^^^^^^^^^
-> 12 | } from '@/components/ui/popover';
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  13 | import { cn } from '@/lib/utils';
-  14 |
-  15 | export interface Memory {
-
-Import map: aliased to relative './components/ui/popover' inside of [project]/
-
-https://nextjs.org/docs/messages/module-not-found
-nextJsHandleConsoleError @ client.ts:57
-handleErrors @ hot-reloader-client.ts:217
-processMessage @ hot-reloader-client.ts:302
-(anonymous) @ hot-reloader-client.ts:90
-handleMessage @ websocket.ts:67
+react-dom-client.development.js:28936 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+page.tsx:46 Session initialized: demo-session-1756795877404
+scheduler.development.js:13 [Violation] 'message' handler took 153ms
+report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
+page.tsx:428 Selected conversation: {id: 'd7df92de-0483-4f91-9474-2f447dcda3f9', createdAt: null, title: '?', userId: 'demo-user', visibility: 'private'}
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 176ms
+conversation-history.tsx:70  DELETE http://localhost:3006/api/demo/conversations?id=d1736beb-bdb4-42ac-a456-19c71f91e1dd 500 (Internal Server Error)
+deleteConversation @ conversation-history.tsx:70
+onClick @ conversation-history.tsx:133
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+conversation-history.tsx:70  DELETE http://localhost:3006/api/demo/conversations?id=7dcd5891-d620-4b8b-8c86-33719b70abc5 500 (Internal Server Error)
+deleteConversation @ conversation-history.tsx:70
+onClick @ conversation-history.tsx:133
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 118ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 562ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 347ms
+conversation-history.tsx:70  DELETE http://localhost:3006/api/demo/conversations?id=7dcd5891-d620-4b8b-8c86-33719b70abc5 500 (Internal Server Error)
+deleteConversation @ conversation-history.tsx:70
+onClick @ conversation-history.tsx:133
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+<button>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:349
+_c @ button.tsx:46
+react-stack-bottom-frame @ react-dom-client.development.js:26600
+renderWithHooksAgain @ react-dom-client.development.js:7217
+renderWithHooks @ react-dom-client.development.js:7129
+updateForwardRef @ react-dom-client.development.js:9267
+beginWork @ react-dom-client.development.js:11508
+runWithFiberInDEV @ react-dom-client.development.js:1491
+performUnitOfWork @ react-dom-client.development.js:17709
+workLoopSync @ react-dom-client.development.js:17541
+renderRootSync @ react-dom-client.development.js:17522
+performWorkOnRoot @ react-dom-client.development.js:16817
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:19195
+performWorkUntilDeadline @ scheduler.development.js:36
+<Button>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:349
+(anonymous) @ conversation-history.tsx:127
+ConversationHistory @ conversation-history.tsx:104
+react-stack-bottom-frame @ react-dom-client.development.js:26600
+renderWithHooksAgain @ react-dom-client.development.js:7217
+renderWithHooks @ react-dom-client.development.js:7129
+updateFunctionComponent @ react-dom-client.development.js:9517
+beginWork @ react-dom-client.development.js:11169
+runWithFiberInDEV @ react-dom-client.development.js:1491
+performUnitOfWork @ react-dom-client.development.js:17709
+workLoopSync @ react-dom-client.development.js:17541
+renderRootSync @ react-dom-client.development.js:17522
+performWorkOnRoot @ react-dom-client.development.js:16817
+performWorkOnRootViaSchedulerTask @ react-dom-client.development.js:19195
+performWorkUntilDeadline @ scheduler.development.js:36
+content.js:27 Error translating word: Error: Could not establish connection. Receiving end does not exist.
+translate @ content.js:27
+await in translate
+B @ content.js:27
+A @ content.js:27
+(anonymous) @ content.js:27
+y @ content.js:10
+F @ content.js:10
+W @ content.js:10
+setTimeout
+ge @ content.js:10
+T @ content.js:10
+wn @ content.js:10
+(anonymous) @ content.js:27
+conversation-history.tsx:70  DELETE http://localhost:3006/api/demo/conversations?id=d7df92de-0483-4f91-9474-2f447dcda3f9 500 (Internal Server Error)
+deleteConversation @ conversation-history.tsx:70
+onClick @ conversation-history.tsx:133
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308

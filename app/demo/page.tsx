@@ -6,17 +6,13 @@ import { FileUpload } from '@/components/file-upload';
 import { YuriBadge } from '@/components/yuri-badge';
 import { ModelSelector } from '@/components/model-selector';
 import { MemoryPanel } from '@/components/memory-panel';
+import { ConversationHistory } from '@/components/conversation-history';
 import { DEFAULT_MODEL_ID } from '@/lib/ai/models-config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Brain, Clock, Settings, Upload, MessageSquare, RotateCw } from 'lucide-react';
 
-interface ConversationHistory {
-  id: string;
-  created_at: string;
-  summary: string;
-}
 
 export default function DemoPage() {
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
@@ -28,10 +24,11 @@ export default function DemoPage() {
   const [selfLearningEnabled, setSelfLearningEnabled] = useState(true);
   const [userName, setUserName] = useState('');
   const [sessionId, setSessionId] = useState<string>('');
-  const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isSavingMemory, setIsSavingMemory] = useState(false);
   const [memoryRefreshKey, setMemoryRefreshKey] = useState(0);
+  const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [loadedConversationId, setLoadedConversationId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +61,24 @@ export default function DemoPage() {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-save conversation when messages change
+  useEffect(() => {
+    if (messages.length >= 2 && messages.length % 2 === 0) {
+      // Save after each complete exchange (user + assistant)
+      const timer = setTimeout(() => {
+        if (loadedConversationId) {
+          // Update existing conversation
+          updateConversation(loadedConversationId);
+        } else {
+          // Save new conversation
+          saveConversation();
+        }
+      }, 1000); // Delay to ensure messages are fully updated
+      
+      return () => clearTimeout(timer);
+    }
+  }, [messages, loadedConversationId]);
 
   // Format time in KST
   const formatKSTTime = (date: Date) => {
@@ -158,7 +173,10 @@ export default function DemoPage() {
                 // Update the last message in real-time
                 setMessages(prev => {
                   const newMessages = [...prev];
-                  newMessages[newMessages.length - 1].content = assistantMessage;
+                  // Check if there are messages before updating
+                  if (newMessages.length > 0) {
+                    newMessages[newMessages.length - 1].content = assistantMessage;
+                  }
                   return newMessages;
                 });
               }
@@ -243,18 +261,6 @@ export default function DemoPage() {
     }
   };
 
-  const loadConversationHistory = async () => {
-    try {
-      // This would load actual conversation history
-      const mockHistory: ConversationHistory[] = [
-        { id: '1', created_at: new Date().toISOString(), summary: '이전 대화 1' },
-        { id: '2', created_at: new Date().toISOString(), summary: '이전 대화 2' },
-      ];
-      setConversationHistory(mockHistory);
-    } catch (error) {
-      console.error('Failed to load history:', error);
-    }
-  };
 
   const handleUserNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
@@ -262,12 +268,87 @@ export default function DemoPage() {
     localStorage.setItem('userName', name);
   };
 
-  const handleNewSession = () => {
+  const handleNewSession = async () => {
+    // Save current conversation before starting new session
+    if (messages.length > 0 && !loadedConversationId) {
+      await saveConversation();
+    }
+    
     setMessages([]);
     setUploadedFiles([]);
+    setIsViewingHistory(false);
+    setLoadedConversationId(null);
     const newSessionId = `demo-session-${Date.now()}`;
     setSessionId(newSessionId);
     console.log('New session started:', newSessionId);
+  };
+
+  const saveConversation = async () => {
+    if (messages.length === 0) return;
+
+    try {
+      // AI로 제목 생성
+      const title = await generateTitle(messages);
+      
+      const response = await fetch('/api/demo/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-demo-mode': 'true',
+        },
+        body: JSON.stringify({
+          title,
+          sessionId,
+          messages,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLoadedConversationId(data.conversationId);
+        console.log('Conversation saved successfully');
+        // Refresh conversation list
+        setMemoryRefreshKey(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+    }
+  };
+
+  const updateConversation = async (conversationId: string) => {
+    if (messages.length === 0) return;
+
+    try {
+      const response = await fetch(`/api/demo/conversations/${conversationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-demo-mode': 'true',
+        },
+        body: JSON.stringify({
+          messages,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Conversation updated successfully');
+        setMemoryRefreshKey(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error updating conversation:', error);
+    }
+  };
+
+  const generateTitle = async (messages: Array<{ role: string; content: string }>) => {
+    // 간단한 제목 생성 로직
+    const userMessages = messages.filter(m => m.role === 'user').map(m => m.content).join(' ');
+    const firstMessage = messages[0]?.content || '';
+    
+    // 첫 사용자 메시지를 기반으로 제목 생성
+    if (userMessages.length > 50) {
+      return userMessages.slice(0, 47) + '...';
+    }
+    return userMessages || firstMessage.slice(0, 50);
   };
 
   return (
@@ -388,33 +469,27 @@ export default function DemoPage() {
                   <Clock className="h-4 w-4" />
                   대화 기록
                 </h3>
-                <div className="space-y-2">
-                  {conversationHistory.length === 0 ? (
-                    <div className="text-xs text-muted-foreground text-center py-4">
-                      대화 기록이 없습니다
-                    </div>
-                  ) : (
-                    conversationHistory.map((conv) => (
-                      <div
-                        key={conv.id}
-                        className="p-2 rounded border hover:bg-accent cursor-pointer text-xs"
-                      >
-                        <div className="text-muted-foreground">
-                          {new Date(conv.created_at).toLocaleString('ko-KR')}
-                        </div>
-                        <div className="mt-1 truncate">{conv.summary}</div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <Button 
-                  onClick={loadConversationHistory}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  기록 불러오기
-                </Button>
+                <ConversationHistory 
+                  refreshKey={memoryRefreshKey}
+                  onSelectConversation={(conversation) => {
+                    console.log('Selected conversation:', conversation);
+                    setLoadedConversationId(conversation.id);
+                    setIsViewingHistory(false);  // 이어서 대화 가능
+                  }}
+                  onLoadMessages={(loadedMessages) => {
+                    // 로드된 메시지로 현재 대화 교체
+                    setMessages(loadedMessages.map(msg => ({
+                      role: msg.role,
+                      content: msg.content
+                    })));
+                    // 스크롤을 맨 아래로
+                    setTimeout(() => {
+                      if (messagesEndRef.current) {
+                        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }, 100);
+                  }}
+                />
               </div>
             </TabsContent>
 
@@ -468,14 +543,30 @@ export default function DemoPage() {
         {/* Header */}
         <div className="border-b p-4 bg-card">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex items-center gap-4">
               <h1 className="text-xl font-semibold flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
                 jetXA AI Assistant
               </h1>
-              <p className="text-sm text-muted-foreground">
-                고급 멀티모달 AI 어시스턴트 • 세션: {sessionId.slice(-8)}
-              </p>
+              {loadedConversationId ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-blue-500 bg-blue-500/10 px-2 py-1 rounded">
+                    💬 대화 이어가기
+                  </span>
+                  <Button
+                    onClick={handleNewSession}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    새 대화
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  고급 멀티모달 AI 어시스턴트 • 세션: {sessionId.slice(-8)}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2 text-xs">
               {webSearchEnabled && (
@@ -593,7 +684,7 @@ export default function DemoPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="메시지를 입력하세요..."
+              placeholder={loadedConversationId ? "대화를 이어서 진행하세요..." : "메시지를 입력하세요..."}
               className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
               disabled={isLoading}
             />
