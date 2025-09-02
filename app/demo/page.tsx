@@ -340,15 +340,43 @@ export default function DemoPage() {
   };
 
   const generateTitle = async (messages: Array<{ role: string; content: string }>) => {
-    // 간단한 제목 생성 로직
+    try {
+      // 대화 내용을 AI로 축약하여 제목 생성 - 사용자와 AI 응답 모두 포함
+      const conversationText = messages
+        .slice(0, 6) // 처음 6개 메시지만 사용 (사용자 3개, AI 3개 정도)
+        .map(m => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content.slice(0, 100)}`)
+        .join('\n');
+
+      // 데모 모드에서는 /api/demo/generate-title 사용
+      const response = await fetch('/api/demo/generate-title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-demo-mode': 'true',
+        },
+        body: JSON.stringify({
+          text: conversationText,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate title');
+      }
+
+      const data = await response.json();
+      if (data.title) {
+        return data.title.slice(0, 50);
+      }
+    } catch (error) {
+      console.error('Error generating title:', error);
+    }
+
+    // AI 생성 실패시 fallback: 첫 사용자 메시지 사용
     const userMessages = messages.filter(m => m.role === 'user').map(m => m.content).join(' ');
-    const firstMessage = messages[0]?.content || '';
-    
-    // 첫 사용자 메시지를 기반으로 제목 생성
     if (userMessages.length > 50) {
       return userMessages.slice(0, 47) + '...';
     }
-    return userMessages || firstMessage.slice(0, 50);
+    return userMessages || '새 대화';
   };
 
   return (

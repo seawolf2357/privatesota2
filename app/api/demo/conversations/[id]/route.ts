@@ -72,14 +72,49 @@ export async function PUT(
       await db.insert(message).values(messagesToInsert);
     }
 
-    // 제목 업데이트 (첫 사용자 메시지 기반)
+    // AI를 사용한 제목 생성 및 업데이트
     const userMessages = chatMessages.filter((m: any) => m.role === 'user');
     if (userMessages.length > 0) {
-      const title = userMessages.map((m: any) => m.content).join(' ').slice(0, 50);
-      await db
-        .update(chat)
-        .set({ title })
-        .where(eq(chat.id, conversationId));
+      try {
+        // AI로 제목 생성 - 사용자와 AI 응답 모두 포함
+        const conversationText = chatMessages
+          .slice(0, 6)
+          .map((m: any) => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content.slice(0, 100)}`)
+          .join('\n');
+
+        const titleResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3006'}/api/demo/generate-title`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-demo-mode': 'true',
+          },
+          body: JSON.stringify({
+            text: conversationText,
+          }),
+        });
+
+        let title = '새 대화';
+        if (titleResponse.ok) {
+          const data = await titleResponse.json();
+          title = data.title || userMessages[0].content.slice(0, 50);
+        } else {
+          // AI 실패시 fallback
+          title = userMessages[0].content.slice(0, 50);
+        }
+
+        await db
+          .update(chat)
+          .set({ title })
+          .where(eq(chat.id, conversationId));
+      } catch (error) {
+        console.error('Error generating title:', error);
+        // 에러시 간단한 제목 사용
+        const simpleTitle = userMessages[0].content.slice(0, 50);
+        await db
+          .update(chat)
+          .set({ title: simpleTitle })
+          .where(eq(chat.id, conversationId));
+      }
     }
 
     return NextResponse.json({ 
