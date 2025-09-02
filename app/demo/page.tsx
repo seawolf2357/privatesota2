@@ -529,7 +529,13 @@ export default function DemoPage() {
                   파일 업로드
                 </h3>
                 <FileUpload 
-                  sessionId={sessionId || 'demo'} 
+                  sessionId={sessionId || 'demo'}
+                  uploadedFiles={uploadedFiles.map((f, index) => ({
+                    fileId: `file-${index}-${f.filename.replace(/[^a-zA-Z0-9]/g, '-')}`,
+                    filename: f.filename,
+                    fileType: f.filename.split('.').pop() || 'file',
+                    processedContent: f.processedContent
+                  }))}
                   onFilesChange={(files) => {
                     setUploadedFiles(files.map(f => ({
                       filename: f.filename,

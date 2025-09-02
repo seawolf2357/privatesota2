@@ -14,11 +14,11 @@ interface UploadedFile {
 
 interface FileUploadProps {
   sessionId: string;
+  uploadedFiles?: UploadedFile[];
   onFilesChange?: (files: UploadedFile[]) => void;
 }
 
-export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+export function FileUpload({ sessionId, uploadedFiles = [], onFilesChange }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDemoMode = sessionId === 'demo' || sessionId?.startsWith('demo-');
@@ -58,7 +58,6 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
     }
 
     const updatedFiles = [...uploadedFiles, ...newFiles];
-    setUploadedFiles(updatedFiles);
     onFilesChange?.(updatedFiles);
     setIsUploading(false);
 
@@ -82,7 +81,6 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
       }
 
       const updatedFiles = uploadedFiles.filter(f => f.fileId !== fileId);
-      setUploadedFiles(updatedFiles);
       onFilesChange?.(updatedFiles);
       toast.success('파일 삭제 완료');
     } catch (error) {
