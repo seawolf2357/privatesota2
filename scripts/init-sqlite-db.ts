@@ -3,6 +3,42 @@ import { db } from '../lib/db';
 
 async function initializeDatabase() {
   try {
+    console.log('Creating User table...');
+    
+    await db.run(sql`
+      CREATE TABLE IF NOT EXISTS User (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+        email TEXT NOT NULL,
+        password TEXT
+      )
+    `);
+    
+    console.log('Creating Chat table...');
+    
+    await db.run(sql`
+      CREATE TABLE IF NOT EXISTS Chat (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        title TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        visibility TEXT DEFAULT 'private'
+      )
+    `);
+    
+    console.log('Creating Message_v2 table...');
+    
+    await db.run(sql`
+      CREATE TABLE IF NOT EXISTS Message_v2 (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+        chatId TEXT NOT NULL,
+        role TEXT NOT NULL,
+        parts TEXT NOT NULL,
+        attachments TEXT DEFAULT '[]',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (chatId) REFERENCES Chat(id)
+      )
+    `);
+    
     console.log('Creating UserMemory table...');
     
     await db.run(sql`

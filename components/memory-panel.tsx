@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Trash2, Brain, Calendar, User, Heart, StickyNote, ListTodo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -63,8 +62,12 @@ export function MemoryPanel({ userId, className }: MemoryPanelProps) {
   const fetchMemories = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/memories?userId=${userId}`);
+      const isDemoMode = userId === 'demo-user' || userId?.startsWith('demo-');
+      const response = await fetch(`/api/memories?userId=${userId}`, {
+        headers: {
+          'x-demo-mode': isDemoMode ? 'true' : 'false',
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setMemories(data);
@@ -82,8 +85,12 @@ export function MemoryPanel({ userId, className }: MemoryPanelProps) {
     }
 
     try {
+      const isDemoMode = userId === 'demo-user' || userId?.startsWith('demo-');
       const response = await fetch(`/api/memories/${memoryId}`, {
         method: 'DELETE',
+        headers: {
+          'x-demo-mode': isDemoMode ? 'true' : 'false',
+        },
       });
 
       if (response.ok) {
@@ -107,19 +114,19 @@ export function MemoryPanel({ userId, className }: MemoryPanelProps) {
   }, {} as Record<string, Memory[]>);
 
   return (
-    <Card className={cn('h-full', className)}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Brain className="h-5 w-5" />
+    <div className={cn('h-full', className)}>
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Brain className="h-4 w-4" />
           기억된 정보
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <div className="text-xs text-muted-foreground">
           대화에서 추출된 중요한 정보들
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
+        </div>
+      </div>
+      <div className="mt-4">
         {/* Category filters */}
-        <div className="px-4 pb-3">
+        <div className="pb-3">
           <div className="flex flex-wrap gap-2">
             <Button
               variant={selectedCategory === null ? 'default' : 'outline'}
@@ -213,7 +220,7 @@ export function MemoryPanel({ userId, className }: MemoryPanelProps) {
             메모리는 대화 중 자동으로 저장됩니다
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

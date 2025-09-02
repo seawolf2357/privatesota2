@@ -1,3 +1,5 @@
+v0.1.1 20250902 1223
+  - adj. memory (db)
 v0.1 20250902 1047
     - init with Yuri.
     - integrate with other models.

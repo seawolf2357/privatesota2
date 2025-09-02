@@ -1,81 +1,12 @@
 react-dom-client.development.js:28936 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-page.tsx:39 Session initialized: demo-session-1756776916005
-scheduler.development.js:13 [Violation] 'message' handler took 154ms
+page.tsx:39 Session initialized: demo-session-1756783107739
 report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
+page.tsx:168 Auto-saving memories...
+page.tsx:168 Auto-saving memories...
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 5175ms
-file-upload.tsx:72  DELETE http://localhost:3006/api/upload?fileId=demo-1756776928762 401 (Unauthorized)
-handleFileDelete @ file-upload.tsx:72
-onClick @ file-upload.tsx:149
-executeDispatch @ react-dom-client.development.js:19379
-runWithFiberInDEV @ react-dom-client.development.js:1491
-processDispatchQueue @ react-dom-client.development.js:19429
-(anonymous) @ react-dom-client.development.js:20050
-batchedUpdates$1 @ react-dom-client.development.js:3236
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
-dispatchEvent @ react-dom-client.development.js:24340
-dispatchDiscreteEvent @ react-dom-client.development.js:24308
-file-upload.tsx:85 Delete error: Error: Delete failed
-    at handleFileDelete (file-upload.tsx:77:15)
-error @ intercept-console-error.ts:40
-handleFileDelete @ file-upload.tsx:85
-await in handleFileDelete
-onClick @ file-upload.tsx:149
-executeDispatch @ react-dom-client.development.js:19379
-runWithFiberInDEV @ react-dom-client.development.js:1491
-processDispatchQueue @ react-dom-client.development.js:19429
-(anonymous) @ react-dom-client.development.js:20050
-batchedUpdates$1 @ react-dom-client.development.js:3236
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
-dispatchEvent @ react-dom-client.development.js:24340
-dispatchDiscreteEvent @ react-dom-client.development.js:24308
-file-upload.tsx:72  DELETE http://localhost:3006/api/upload?fileId=demo-1756776928762 401 (Unauthorized)
-handleFileDelete @ file-upload.tsx:72
-onClick @ file-upload.tsx:149
-executeDispatch @ react-dom-client.development.js:19379
-runWithFiberInDEV @ react-dom-client.development.js:1491
-processDispatchQueue @ react-dom-client.development.js:19429
-(anonymous) @ react-dom-client.development.js:20050
-batchedUpdates$1 @ react-dom-client.development.js:3236
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
-dispatchEvent @ react-dom-client.development.js:24340
-dispatchDiscreteEvent @ react-dom-client.development.js:24308
-file-upload.tsx:85 Delete error: Error: Delete failed
-    at handleFileDelete (file-upload.tsx:77:15)
-error @ intercept-console-error.ts:40
-handleFileDelete @ file-upload.tsx:85
-await in handleFileDelete
-onClick @ file-upload.tsx:149
-executeDispatch @ react-dom-client.development.js:19379
-runWithFiberInDEV @ react-dom-client.development.js:1491
-processDispatchQueue @ react-dom-client.development.js:19429
-(anonymous) @ react-dom-client.development.js:20050
-batchedUpdates$1 @ react-dom-client.development.js:3236
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
-dispatchEvent @ react-dom-client.development.js:24340
-dispatchDiscreteEvent @ react-dom-client.development.js:24308
-file-upload.tsx:72  DELETE http://localhost:3006/api/upload?fileId=demo-1756776928762 401 (Unauthorized)
-handleFileDelete @ file-upload.tsx:72
-onClick @ file-upload.tsx:149
-executeDispatch @ react-dom-client.development.js:19379
-runWithFiberInDEV @ react-dom-client.development.js:1491
-processDispatchQueue @ react-dom-client.development.js:19429
-(anonymous) @ react-dom-client.development.js:20050
-batchedUpdates$1 @ react-dom-client.development.js:3236
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
-dispatchEvent @ react-dom-client.development.js:24340
-dispatchDiscreteEvent @ react-dom-client.development.js:24308
-file-upload.tsx:85 Delete error: Error: Delete failed
-    at handleFileDelete (file-upload.tsx:77:15)
-error @ intercept-console-error.ts:40
-handleFileDelete @ file-upload.tsx:85
-await in handleFileDelete
-onClick @ file-upload.tsx:149
-executeDispatch @ react-dom-client.development.js:19379
-runWithFiberInDEV @ react-dom-client.development.js:1491
-processDispatchQueue @ react-dom-client.development.js:19429
-(anonymous) @ react-dom-client.development.js:20050
-batchedUpdates$1 @ react-dom-client.development.js:3236
-dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
-dispatchEvent @ react-dom-client.development.js:24340
-dispatchDiscreteEvent @ react-dom-client.development.js:24308
+report-hmr-latency.ts:26 [Fast Refresh] done in 276ms
+page.tsx:197 Memories extracted: {success: true, count: 0, extracted: 3}
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 128ms
+page.tsx:168 Auto-saving memories...
+page.tsx:197 Memories extracted: {success: true, count: 0, extracted: 2}count: 0extracted: 2success: true[[Prototype]]: Objectconstructor: ƒ Object()assign: ƒ assign()create: ƒ create()defineProperties: ƒ defineProperties()defineProperty: ƒ defineProperty()entries: ƒ entries()freeze: ƒ freeze()fromEntries: ƒ fromEntries()getOwnPropertyDescriptor: ƒ getOwnPropertyDescriptor()getOwnPropertyDescriptors: ƒ getOwnPropertyDescriptors()getOwnPropertyNames: ƒ getOwnPropertyNames()getOwnPropertySymbols: ƒ getOwnPropertySymbols()getPrototypeOf: ƒ getPrototypeOf()groupBy: ƒ groupBy()hasOwn: ƒ hasOwn()is: ƒ is()isExtensible: ƒ isExtensible()isFrozen: ƒ isFrozen()isSealed: ƒ isSealed()keys: ƒ keys()length: 1name: "Object"preventExtensions: ƒ preventExtensions()prototype: {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}seal: ƒ seal()setPrototypeOf: ƒ setPrototypeOf()values: ƒ values()arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()

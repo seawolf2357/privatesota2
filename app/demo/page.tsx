@@ -165,16 +165,56 @@ export default function DemoPage() {
 
   const autoSaveMemories = async () => {
     try {
-      // This would call the memory extraction API
       console.log('Auto-saving memories...');
-      // Show auto-save indicator
-      const indicator = document.createElement('div');
-      indicator.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg';
-      indicator.textContent = '메모리 자동 저장됨';
-      document.body.appendChild(indicator);
-      setTimeout(() => indicator.remove(), 2000);
+      
+      // Extract memories from current conversation
+      if (messages.length < 2) {
+        const indicator = document.createElement('div');
+        indicator.className = 'fixed bottom-4 right-4 bg-yellow-500 text-white px-4 py-2 rounded-lg';
+        indicator.textContent = '저장할 대화가 없습니다';
+        document.body.appendChild(indicator);
+        setTimeout(() => indicator.remove(), 2000);
+        return;
+      }
+
+      // Call memory extraction API
+      const response = await fetch('/api/memories/extract', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-demo-mode': 'true',
+        },
+        body: JSON.stringify({
+          messages: messages,
+          sessionId: sessionId,
+          userId: 'demo-user',
+          forceSave: false // Change to true to save even duplicates
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Memories extracted:', result);
+        
+        // Show success indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg';
+        indicator.textContent = `${result.count || 0}개의 메모리가 저장되었습니다`;
+        document.body.appendChild(indicator);
+        setTimeout(() => indicator.remove(), 2000);
+        
+        // Trigger memory panel refresh without page reload
+        // This will be handled by the MemoryPanel component's useEffect
+      } else {
+        throw new Error('Failed to extract memories');
+      }
     } catch (error) {
       console.error('Auto-save failed:', error);
+      const indicator = document.createElement('div');
+      indicator.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg';
+      indicator.textContent = '메모리 저장 실패';
+      document.body.appendChild(indicator);
+      setTimeout(() => indicator.remove(), 2000);
     }
   };
 
@@ -312,10 +352,6 @@ export default function DemoPage() {
             {/* Memory Tab */}
             <TabsContent value="memory" className="p-4">
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Brain className="h-4 w-4" />
-                  기억된 정보
-                </h3>
                 <MemoryPanel userId="demo-user" className="border-0 p-0" />
               </div>
             </TabsContent>
