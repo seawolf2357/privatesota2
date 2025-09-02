@@ -8,6 +8,12 @@ config({
 });
 
 const runMigrate = async () => {
+  // Skip migration for local development (SQLite)
+  if (process.env.NODE_ENV !== 'production' && !process.env.POSTGRES_URL) {
+    console.log('⏭️ Skipping migrations for local development (using SQLite)');
+    process.exit(0);
+  }
+
   if (!process.env.POSTGRES_URL) {
     throw new Error('POSTGRES_URL is not defined');
   }
