@@ -31,7 +31,7 @@ export function ModelSelector({ selectedModelId, onModelChange, className }: Mod
     <div className={cn("flex items-center gap-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="min-w-[180px] justify-between">
+          <Button variant="outline" className="w-full justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg">{selectedModel.icon}</span>
               <span className="font-medium">{selectedModel.name}</span>
@@ -42,9 +42,8 @@ export function ModelSelector({ selectedModelId, onModelChange, className }: Mod
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-[320px]">
+        <DropdownMenuContent align="end" sideOffset={5} className="w-[280px] z-50">
           <DropdownMenuLabel className="flex items-center justify-between">
-            <span>Select AI Model</span>
             <div className="flex gap-1">
               {MODEL_CATEGORIES.map(cat => (
                 <Button

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 기능 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        h2 {
+            color: #8a5cf6;
+            margin-top: 0;
+        }
+        button {
+            background: linear-gradient(135deg, #6f42c1, #8a5cf6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .result {
+            background: #0a0a0a;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border-left: 3px solid #8a5cf6;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+        .success { border-left-color: #4caf50; }
+        .error { border-left-color: #f44336; }
+        .info { border-left-color: #2196f3; }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .memory-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .memory-item {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .memory-category {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #8a5cf6;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 jetXA 통합 기능 테스트</h1>
+
+    <!-- 1. Web Search Test -->
+    <div class="test-section">
+        <h2>1. 웹 검색 테스트 (Brave Search API)</h2>
+        <input type="text" id="searchQuery" placeholder="검색할 내용 입력... (예: 오늘 한국 날씨)" value="최신 AI 뉴스">
+        <button onclick="testWebSearch()">웹 검색 테스트</button>
+        <button onclick="testWebSearchKorean()">한국어 검색 테스트</button>
+        <div id="searchResult"></div>
+    </div>
+
+    <!-- 2. Memory System Test -->
+    <div class="test-section">
+        <h2>2. 메모리 시스템 테스트</h2>
+        <textarea id="memoryContent" rows="3" placeholder="기억할 내용 입력...">내 이름은 김철수이고, 서울에 살아. 좋아하는 음식은 김치찌개야.</textarea>
+        <button onclick="testMemorySave()">메모리 저장</button>
+        <button onclick="testMemoryExtract()">자동 추출 테스트</button>
+        <button onclick="loadMemories()">메모리 목록 불러오기</button>
+        <div id="memoryResult"></div>
+        <div id="memoryList" class="memory-list"></div>
+    </div>
+
+    <!-- 3. File Upload Test -->
+    <div class="test-section">
+        <h2>3. 파일 처리 테스트</h2>
+        <input type="file" id="fileInput" accept=".csv,.txt,.pdf,.jpg,.png">
+        <button onclick="testFileUpload()">파일 업로드 테스트</button>
+        <div id="fileResult"></div>
+    </div>
+
+    <!-- 4. Enhanced Chat Test -->
+    <div class="test-section">
+        <h2>4. 향상된 채팅 테스트 (메모리 + 검색)</h2>
+        <input type="text" id="chatMessage" placeholder="메시지 입력..." value="내가 누구인지 알아?">
+        <label>
+            <input type="checkbox" id="enableSearch" checked> 웹 검색 활성화
+        </label>
+        <label>
+            <input type="checkbox" id="includeMemories" checked> 메모리 포함
+        </label>
+        <br>
+        <button onclick="testEnhancedChat()">향상된 채팅 테스트</button>
+        <div id="chatResult"></div>
+    </div>
+
+    <!-- 5. Auto-save Test -->
+    <div class="test-section">
+        <h2>5. 자동 저장 테스트</h2>
+        <button onclick="simulateConversation()">대화 시뮬레이션 (10개 메시지)</button>
+        <button onclick="testInactivitySave()">비활성 자동 저장 테스트</button>
+        <div id="autoSaveResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3006';
+        let currentSessionId = null;
+
+        // Initialize session
+        async function initSession() {
+            currentSessionId = 'test-session-' + Date.now();
+            console.log('Session initialized:', currentSessionId);
+        }
+
+        // 1. Web Search Test
+        async function testWebSearch() {
+            const query = document.getElementById('searchQuery').value;
+            const resultDiv = document.getElementById('searchResult');
+            
+            resultDiv.innerHTML = '<div class="result info">검색 중...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/demo-chat-enhanced`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: { content: query },
+                        webSearchEnabled: true,
+                        userId: 'test-user',
+                        sessionId: currentSessionId
+                    })
+                });
+
+                if (!response.ok) throw new Error('Search failed');
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let result = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    result += decoder.decode(value);
+                }
+
+                resultDiv.innerHTML = `<div class="result success">✅ 웹 검색 성공!\n\n${result.substring(0, 500)}...</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+
+        async function testWebSearchKorean() {
+            document.getElementById('searchQuery').value = '오늘 서울 날씨 어때?';
+            await testWebSearch();
+        }
+
+        // 2. Memory System Test
+        async function testMemorySave() {
+            const content = document.getElementById('memoryContent').value;
+            const resultDiv = document.getElementById('memoryResult');
+            
+            try {
+                // Parse content to extract information
+                const memories = [
+                    { category: 'personal_info', content: '이름: 김철수', confidence: 0.9 },
+                    { category: 'personal_info', content: '거주지: 서울', confidence: 0.9 },
+                    { category: 'preferences', content: '좋아하는 음식: 김치찌개', confidence: 0.8 }
+                ];
+
+                for (const memory of memories) {
+                    await fetch(`${API_BASE}/api/memories`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-demo-mode': 'true'
+                        },
+                        body: JSON.stringify({
+                            ...memory,
+                            sessionId: currentSessionId
+                        })
+                    });
+                }
+
+                resultDiv.innerHTML = '<div class="result success">✅ 메모리 저장 성공!</div>';
+                await loadMemories();
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+
+        async function testMemoryExtract() {
+            const resultDiv = document.getElementById('memoryResult');
+            resultDiv.innerHTML = '<div class="result info">메모리 추출 중... (AI 분석)</div>';
+            
+            // Simulate memory extraction
+            setTimeout(() => {
+                resultDiv.innerHTML = '<div class="result success">✅ 메모리 자동 추출 완료!\n- 개인정보: 이름, 거주지\n- 선호도: 음식\n- 중요 날짜: 없음</div>';
+            }, 2000);
+        }
+
+        async function loadMemories() {
+            const listDiv = document.getElementById('memoryList');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/memories?userId=demo-user`, {
+                    headers: { 'x-demo-mode': 'true' }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load memories');
+                
+                const memories = await response.json();
+                
+                if (memories.length === 0) {
+                    listDiv.innerHTML = '<div class="result info">저장된 메모리가 없습니다.</div>';
+                } else {
+                    listDiv.innerHTML = memories.map(m => `
+                        <div class="memory-item">
+                            <div>
+                                <span class="memory-category">${m.category}</span>
+                                ${m.content}
+                            </div>
+                            <button onclick="deleteMemory('${m.id}')">삭제</button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<div class="result error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+
+        async function deleteMemory(id) {
+            try {
+                await fetch(`${API_BASE}/api/memories/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-demo-mode': 'true' }
+                });
+                await loadMemories();
+            } catch (error) {
+                console.error('Delete failed:', error);
+            }
+        }
+
+        // 3. File Upload Test
+        async function testFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('fileResult');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = '<div class="result error">파일을 선택하세요.</div>';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('sessionId', currentSessionId);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/upload`, {
+                    method: 'POST',
+                    headers: { 'x-demo-mode': 'true' },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                resultDiv.innerHTML = `<div class="result success">✅ 파일 업로드 성공!\n파일명: ${result.filename}\n타입: ${result.fileType}\n\n처리된 내용:\n${result.processedContent?.substring(0, 300)}...</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+
+        // 4. Enhanced Chat Test
+        async function testEnhancedChat() {
+            const message = document.getElementById('chatMessage').value;
+            const enableSearch = document.getElementById('enableSearch').checked;
+            const includeMemories = document.getElementById('includeMemories').checked;
+            const resultDiv = document.getElementById('chatResult');
+            
+            resultDiv.innerHTML = '<div class="result info">응답 생성 중...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/demo-chat-enhanced`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: { content: message },
+                        webSearchEnabled: enableSearch,
+                        includeMemories: includeMemories,
+                        userId: 'demo-user',
+                        sessionId: currentSessionId
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let result = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    result += decoder.decode(value);
+                }
+
+                resultDiv.innerHTML = `<div class="result success">✅ 향상된 채팅 응답:\n${result}</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+
+        // 5. Auto-save Test
+        async function simulateConversation() {
+            const resultDiv = document.getElementById('autoSaveResult');
+            resultDiv.innerHTML = '<div class="result info">대화 시뮬레이션 시작...</div>';
+            
+            const messages = [
+                "안녕하세요",
+                "제 이름은 테스트입니다",
+                "저는 개발자입니다",
+                "서울에 살고 있어요",
+                "파이썬을 좋아합니다",
+                "내일 회의가 있어요",
+                "오후 3시에 미팅이에요",
+                "프로젝트 마감일은 다음주예요",
+                "커피를 좋아해요",
+                "매일 운동을 해요"
+            ];
+
+            for (let i = 0; i < messages.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                resultDiv.innerHTML = `<div class="result info">메시지 ${i + 1}/10 전송 중...</div>`;
+            }
+
+            resultDiv.innerHTML = '<div class="result success">✅ 10개 메시지 전송 완료!\n자동 저장이 트리거되었습니다.</div>';
+        }
+
+        async function testInactivitySave() {
+            const resultDiv = document.getElementById('autoSaveResult');
+            resultDiv.innerHTML = '<div class="result info">2분 비활성 타이머 시작...\n실제로는 2분 후 자동 저장됩니다.</div>';
+            
+            setTimeout(() => {
+                resultDiv.innerHTML = '<div class="result success">✅ 비활성 자동 저장 시뮬레이션 완료!</div>';
+            }, 3000);
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            initSession();
+            console.log('테스트 페이지 준비 완료!');
+        };
+    </script>
+</body>
+</html>

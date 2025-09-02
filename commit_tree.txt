@@ -1,0 +1,8 @@
+v0.1 20250902 1047
+    - init with Yuri.
+    - integrate with other models.
+      - complete pdf upload
+        - recognize uploads.
+          - adj. RAG, memory, ... (Private AGI adjusted.)
+          - modify Time. KST
+            - allow delete mode as demo.

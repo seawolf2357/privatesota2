@@ -168,3 +168,67 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// Memory System Tables - From AGI Space
+export const userMemory = pgTable('UserMemory', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  category: varchar('category', { 
+    enum: ['personal_info', 'preferences', 'important_dates', 'tasks', 'notes', 'general'] 
+  }).notNull(),
+  content: text('content').notNull(),
+  confidence: json('confidence').$type<number>().default(1.0),
+  metadata: json('metadata').$type<{ 
+    source?: string; 
+    extractedFrom?: string;
+    language?: string;
+  }>(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  sourceSessionId: uuid('sourceSessionId').references(() => chat.id),
+});
+
+export type UserMemory = InferSelectModel<typeof userMemory>;
+
+// Uploaded Files Table - Enhanced file processing
+export const uploadedFile = pgTable('UploadedFile', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+  chatId: uuid('chatId')
+    .references(() => chat.id),
+  filename: varchar('filename', { length: 255 }).notNull(),
+  fileType: varchar('fileType', { length: 50 }).notNull(),
+  mimeType: varchar('mimeType', { length: 100 }),
+  size: json('size').$type<number>(),
+  processedContent: text('processedContent'),
+  metadata: json('metadata').$type<{
+    pages?: number;
+    encoding?: string;
+    extractedText?: boolean;
+  }>(),
+  uploadedAt: timestamp('uploadedAt').notNull().defaultNow(),
+});
+
+export type UploadedFile = InferSelectModel<typeof uploadedFile>;
+
+// Web Search Results Cache
+export const searchCache = pgTable('SearchCache', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  query: text('query').notNull(),
+  results: json('results').$type<Array<{
+    title: string;
+    url: string;
+    description: string;
+    age?: string;
+    language?: string;
+  }>>().notNull(),
+  searchEngine: varchar('searchEngine', { length: 50 }).default('brave'),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  expiresAt: timestamp('expiresAt').notNull(),
+});
+
+export type SearchCache = InferSelectModel<typeof searchCache>;

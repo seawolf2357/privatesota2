@@ -38,23 +38,39 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'csv':
-        // Process CSV
+        // Enhanced CSV processing from AGI Space
         try {
           const text = buffer.toString('utf-8');
           const result = Papa.parse(text, {
             header: true,
-            skipEmptyLines: true
+            skipEmptyLines: true,
+            dynamicTyping: true,
+            encoding: 'utf-8'
           });
           
-          processedContent = `CSV 데이터:\n`;
+          processedContent = `CSV 데이터 분석:\n`;
           processedContent += `총 ${result.data.length}개의 행\n`;
           
-          // Include first 10 rows
+          if (result.meta.fields) {
+            processedContent += `헤더: ${result.meta.fields.join(', ')}\n\n`;
+          }
+          
+          // Include first 10 rows with better formatting
           const preview = result.data.slice(0, 10);
-          processedContent += JSON.stringify(preview, null, 2);
+          processedContent += `처음 10개 행 미리보기:\n`;
+          preview.forEach((row: any, index: number) => {
+            processedContent += `행 ${index + 1}: ${JSON.stringify(row)}\n`;
+          });
           
           if (result.data.length > 10) {
-            processedContent += `\n... 그 외 ${result.data.length - 10}개 행 더 있음`;
+            processedContent += `\n... 그 외 ${result.data.length - 10}개 행 더 있음\n`;
+          }
+          
+          // Add data summary
+          if (result.meta.fields && result.data.length > 0) {
+            processedContent += `\n데이터 요약:\n`;
+            processedContent += `- 총 열 수: ${result.meta.fields.length}\n`;
+            processedContent += `- 총 행 수: ${result.data.length}\n`;
           }
         } catch (error) {
           console.error('CSV processing error:', error);
@@ -63,12 +79,37 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'txt':
-        // Process text file
+      case 'md':
+      case 'log':
+        // Enhanced text file processing with encoding detection
         try {
-          processedContent = buffer.toString('utf-8');
-          // Limit to first 5000 characters
-          if (processedContent.length > 5000) {
-            processedContent = processedContent.substring(0, 5000) + '...(truncated)';
+          // Try UTF-8 first, then fallback to other encodings
+          let textContent = '';
+          try {
+            textContent = buffer.toString('utf-8');
+          } catch {
+            // Try other common encodings
+            try {
+              textContent = buffer.toString('utf-16le');
+            } catch {
+              textContent = buffer.toString('latin1');
+            }
+          }
+          
+          processedContent = textContent;
+          
+          // Add file statistics
+          const lines = processedContent.split('\n');
+          const words = processedContent.split(/\s+/).length;
+          const chars = processedContent.length;
+          
+          // Limit to first 10000 characters for large files
+          if (processedContent.length > 10000) {
+            processedContent = processedContent.substring(0, 10000) + '\n\n...(내용이 잘림)';
+            processedContent += `\n\n파일 통계:\n`;
+            processedContent += `- 총 줄 수: ${lines.length}\n`;
+            processedContent += `- 총 단어 수: ${words}\n`;
+            processedContent += `- 총 문자 수: ${chars}\n`;
           }
         } catch (error) {
           console.error('Text processing error:', error);
@@ -148,8 +189,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Skip auth for demo mode
     const session = await auth();
-    if (!session?.user) {
+    const isDemoMode = request.headers.get('x-demo-mode') === 'true';
+    
+    if (!isDemoMode && !session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

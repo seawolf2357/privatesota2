@@ -1,0 +1,81 @@
+react-dom-client.development.js:28936 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+page.tsx:39 Session initialized: demo-session-1756776916005
+scheduler.development.js:13 [Violation] 'message' handler took 154ms
+report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 5175ms
+file-upload.tsx:72  DELETE http://localhost:3006/api/upload?fileId=demo-1756776928762 401 (Unauthorized)
+handleFileDelete @ file-upload.tsx:72
+onClick @ file-upload.tsx:149
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+file-upload.tsx:85 Delete error: Error: Delete failed
+    at handleFileDelete (file-upload.tsx:77:15)
+error @ intercept-console-error.ts:40
+handleFileDelete @ file-upload.tsx:85
+await in handleFileDelete
+onClick @ file-upload.tsx:149
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+file-upload.tsx:72  DELETE http://localhost:3006/api/upload?fileId=demo-1756776928762 401 (Unauthorized)
+handleFileDelete @ file-upload.tsx:72
+onClick @ file-upload.tsx:149
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+file-upload.tsx:85 Delete error: Error: Delete failed
+    at handleFileDelete (file-upload.tsx:77:15)
+error @ intercept-console-error.ts:40
+handleFileDelete @ file-upload.tsx:85
+await in handleFileDelete
+onClick @ file-upload.tsx:149
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+file-upload.tsx:72  DELETE http://localhost:3006/api/upload?fileId=demo-1756776928762 401 (Unauthorized)
+handleFileDelete @ file-upload.tsx:72
+onClick @ file-upload.tsx:149
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308
+file-upload.tsx:85 Delete error: Error: Delete failed
+    at handleFileDelete (file-upload.tsx:77:15)
+error @ intercept-console-error.ts:40
+handleFileDelete @ file-upload.tsx:85
+await in handleFileDelete
+onClick @ file-upload.tsx:149
+executeDispatch @ react-dom-client.development.js:19379
+runWithFiberInDEV @ react-dom-client.development.js:1491
+processDispatchQueue @ react-dom-client.development.js:19429
+(anonymous) @ react-dom-client.development.js:20050
+batchedUpdates$1 @ react-dom-client.development.js:3236
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19583
+dispatchEvent @ react-dom-client.development.js:24340
+dispatchDiscreteEvent @ react-dom-client.development.js:24308

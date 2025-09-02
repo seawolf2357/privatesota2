@@ -21,6 +21,7 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDemoMode = sessionId === 'demo' || sessionId?.startsWith('demo-');
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -71,6 +72,9 @@ export function FileUpload({ sessionId, onFilesChange }: FileUploadProps) {
     try {
       const response = await fetch(`/api/upload?fileId=${fileId}`, {
         method: 'DELETE',
+        headers: {
+          'x-demo-mode': isDemoMode ? 'true' : 'false',
+        },
       });
 
       if (!response.ok) {
