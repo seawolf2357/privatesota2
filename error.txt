@@ -1,12 +1,28 @@
-react-dom-client.development.js:28936 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-page.tsx:39 Session initialized: demo-session-1756783107739
-report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
-page.tsx:168 Auto-saving memories...
-page.tsx:168 Auto-saving memories...
+hot-reloader-client.ts:124 Console was cleared
+client.ts:57 ./components/memory-panel.tsx:8:1
+Module not found: Can't resolve '@/components/ui/popover'
+   6 | import { ScrollArea } from '@/components/ui/scroll-area';
+   7 | import { Badge } from '@/components/ui/badge';
+>  8 | import {
+     | ^^^^^^^^
+>  9 |   Popover,
+     | ^^^^^^^^^^
+> 10 |   PopoverContent,
+     | ^^^^^^^^^^
+> 11 |   PopoverTrigger,
+     | ^^^^^^^^^^
+> 12 | } from '@/components/ui/popover';
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  13 | import { cn } from '@/lib/utils';
+  14 |
+  15 | export interface Memory {
+
+Import map: aliased to relative './components/ui/popover' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found
+nextJsHandleConsoleError @ client.ts:57
+handleErrors @ hot-reloader-client.ts:217
+processMessage @ hot-reloader-client.ts:302
+(anonymous) @ hot-reloader-client.ts:90
+handleMessage @ websocket.ts:67
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 276ms
-page.tsx:197 Memories extracted: {success: true, count: 0, extracted: 3}
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 128ms
-page.tsx:168 Auto-saving memories...
-page.tsx:197 Memories extracted: {success: true, count: 0, extracted: 2}count: 0extracted: 2success: true[[Prototype]]: Objectconstructor: ƒ Object()assign: ƒ assign()create: ƒ create()defineProperties: ƒ defineProperties()defineProperty: ƒ defineProperty()entries: ƒ entries()freeze: ƒ freeze()fromEntries: ƒ fromEntries()getOwnPropertyDescriptor: ƒ getOwnPropertyDescriptor()getOwnPropertyDescriptors: ƒ getOwnPropertyDescriptors()getOwnPropertyNames: ƒ getOwnPropertyNames()getOwnPropertySymbols: ƒ getOwnPropertySymbols()getPrototypeOf: ƒ getPrototypeOf()groupBy: ƒ groupBy()hasOwn: ƒ hasOwn()is: ƒ is()isExtensible: ƒ isExtensible()isFrozen: ƒ isFrozen()isSealed: ƒ isSealed()keys: ƒ keys()length: 1name: "Object"preventExtensions: ƒ preventExtensions()prototype: {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}seal: ƒ seal()setPrototypeOf: ƒ setPrototypeOf()values: ƒ values()arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()

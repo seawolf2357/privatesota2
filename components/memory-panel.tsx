@@ -1,10 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Brain, Calendar, User, Heart, StickyNote, ListTodo } from 'lucide-react';
+import { Trash2, Brain, Calendar, User, Heart, StickyNote, ListTodo, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 export interface Memory {
@@ -53,6 +58,7 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [deletePopoverOpen, setDeletePopoverOpen] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -81,10 +87,6 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
   };
 
   const deleteMemory = async (memoryId: string) => {
-    if (!confirm('이 기억을 삭제하시겠습니까?')) {
-      return;
-    }
-
     try {
       const isDemoMode = userId === 'demo-user' || userId?.startsWith('demo-');
       const response = await fetch(`/api/memories/${memoryId}`, {
@@ -96,6 +98,7 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
 
       if (response.ok) {
         setMemories(prev => prev.filter(m => m.id !== memoryId));
+        setDeletePopoverOpen(null);
       }
     } catch (error) {
       console.error('Failed to delete memory:', error);
@@ -199,14 +202,60 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
                           {new Date(memory.updatedAt).toLocaleString('ko-KR')}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => deleteMemory(memory.id)}
+                      <Popover 
+                        open={deletePopoverOpen === memory.id}
+                        onOpenChange={(open) => setDeletePopoverOpen(open ? memory.id : null)}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent 
+                          className="w-72 p-4" 
+                          align="end"
+                          sideOffset={5}
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
+                              <div className="space-y-1">
+                                <p className="text-sm font-semibold">
+                                  이 기억을 삭제하시겠습니까?
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  삭제된 기억은 복구할 수 없습니다.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="bg-muted/50 rounded-md p-2">
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {memory.content}
+                              </p>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setDeletePopoverOpen(null)}
+                              >
+                                취소
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => deleteMemory(memory.id)}
+                              >
+                                삭제
+                              </Button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 );
