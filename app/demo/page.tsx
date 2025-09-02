@@ -496,17 +496,58 @@ export default function DemoPage() {
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4 max-w-4xl mx-auto">
             {messages.length === 0 ? (
-              <div className="text-center text-muted-foreground mt-8">
-                <p className="text-4xl mb-4">🚀</p>
-                <p className="font-semibold text-lg">jetXA에 오신 것을 환영합니다</p>
-                <p className="text-sm mt-2">고급 멀티모달 AI 어시스턴트</p>
-                <div className="mt-4 text-sm space-y-1">
-                  <p>✨ 이미지 분석 및 문서 처리</p>
-                  <p>🔍 실시간 웹 검색</p>
-                  <p>🧠 대화 내용 기억 및 학습</p>
-                  <p>🌐 다국어 지원</p>
+              <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="text-center max-w-2xl">
+                  {/* Logo/Brand */}
+                  <div className="mb-8">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg mb-4">
+                      <span className="text-3xl text-white font-bold">XA</span>
+                    </div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      jetXA
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Advanced AI Assistant
+                    </p>
+                  </div>
+
+                  {/* Feature Cards */}
+                  <div className="grid grid-cols-2 gap-3 mb-8">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-card/30 to-card/50 border border-border/50 cursor-default">
+                      <div className="text-2xl mb-2 opacity-80">🎯</div>
+                      <div className="text-sm font-medium text-foreground/90">정확한 응답</div>
+                      <div className="text-xs text-muted-foreground/70 mt-1">
+                        실시간 웹 검색 기반
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-card/30 to-card/50 border border-border/50 cursor-default">
+                      <div className="text-2xl mb-2 opacity-80">💡</div>
+                      <div className="text-sm font-medium text-foreground/90">맞춤형 AI</div>
+                      <div className="text-xs text-muted-foreground/70 mt-1">
+                        대화 학습 및 기억
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-card/30 to-card/50 border border-border/50 cursor-default">
+                      <div className="text-2xl mb-2 opacity-80">📎</div>
+                      <div className="text-sm font-medium text-foreground/90">멀티모달</div>
+                      <div className="text-xs text-muted-foreground/70 mt-1">
+                        이미지 · 문서 분석
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-card/30 to-card/50 border border-border/50 cursor-default">
+                      <div className="text-2xl mb-2 opacity-80">🌏</div>
+                      <div className="text-sm font-medium text-foreground/90">다국어</div>
+                      <div className="text-xs text-muted-foreground/70 mt-1">
+                        한국어 최적화
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  <p className="text-sm text-muted-foreground">
+                    메시지를 입력하여 시작하세요
+                  </p>
                 </div>
-                <p className="text-sm mt-4">무엇을 도와드릴까요?</p>
               </div>
             ) : (
               messages.map((msg, idx) => (
