@@ -19,6 +19,7 @@ export interface Memory {
 interface MemoryPanelProps {
   userId?: string;
   className?: string;
+  refreshKey?: number;
 }
 
 const categoryIcons = {
@@ -48,7 +49,7 @@ const categoryNames = {
   general: '일반',
 };
 
-export function MemoryPanel({ userId, className }: MemoryPanelProps) {
+export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps) {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -57,7 +58,7 @@ export function MemoryPanel({ userId, className }: MemoryPanelProps) {
     if (userId) {
       fetchMemories();
     }
-  }, [userId]);
+  }, [userId, refreshKey]);
 
   const fetchMemories = async () => {
     try {

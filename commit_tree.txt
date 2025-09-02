@@ -1,5 +1,6 @@
-v0.1.1 20250902 1223
+v0.1.1 20250902 1238
   - adj. memory (db)
+    - adj. memory spinner
 v0.1 20250902 1047
     - init with Yuri.
     - integrate with other models.

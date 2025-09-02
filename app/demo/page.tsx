@@ -30,6 +30,8 @@ export default function DemoPage() {
   const [sessionId, setSessionId] = useState<string>('');
   const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [isSavingMemory, setIsSavingMemory] = useState(false);
+  const [memoryRefreshKey, setMemoryRefreshKey] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -184,6 +186,7 @@ export default function DemoPage() {
 
   const autoSaveMemories = async () => {
     try {
+      setIsSavingMemory(true);
       console.log('Auto-saving memories...');
       
       // Extract memories from current conversation
@@ -193,6 +196,7 @@ export default function DemoPage() {
         indicator.textContent = '저장할 대화가 없습니다';
         document.body.appendChild(indicator);
         setTimeout(() => indicator.remove(), 2000);
+        setIsSavingMemory(false);
         return;
       }
 
@@ -222,8 +226,8 @@ export default function DemoPage() {
         document.body.appendChild(indicator);
         setTimeout(() => indicator.remove(), 2000);
         
-        // Trigger memory panel refresh without page reload
-        // This will be handled by the MemoryPanel component's useEffect
+        // Trigger memory panel refresh by updating key
+        setMemoryRefreshKey(prev => prev + 1);
       } else {
         throw new Error('Failed to extract memories');
       }
@@ -234,6 +238,8 @@ export default function DemoPage() {
       indicator.textContent = '메모리 저장 실패';
       document.body.appendChild(indicator);
       setTimeout(() => indicator.remove(), 2000);
+    } finally {
+      setIsSavingMemory(false);
     }
   };
 
@@ -371,7 +377,7 @@ export default function DemoPage() {
             {/* Memory Tab */}
             <TabsContent value="memory" className="p-4">
               <div className="space-y-3">
-                <MemoryPanel userId="demo-user" className="border-0 p-0" />
+                <MemoryPanel userId="demo-user" className="border-0 p-0" refreshKey={memoryRefreshKey} />
               </div>
             </TabsContent>
 
@@ -440,9 +446,19 @@ export default function DemoPage() {
             size="sm"
             className="w-full"
             onClick={autoSaveMemories}
+            disabled={isSavingMemory}
           >
-            <Brain className="h-3 w-3 mr-2" />
-            기억 저장
+            {isSavingMemory ? (
+              <>
+                <div className="h-3 w-3 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                저장 중...
+              </>
+            ) : (
+              <>
+                <Brain className="h-3 w-3 mr-2" />
+                기억 저장
+              </>
+            )}
           </Button>
         </div>
       </div>
