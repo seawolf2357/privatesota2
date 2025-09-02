@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChatSettings } from '@/components/chat-settings';
 import { FileUpload } from '@/components/file-upload';
 import { YuriBadge } from '@/components/yuri-badge';
@@ -30,6 +30,15 @@ export default function DemoPage() {
   const [sessionId, setSessionId] = useState<string>('');
   const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // Initialize session
   useEffect(() => {
@@ -76,6 +85,11 @@ export default function DemoPage() {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
+    
+    // Scroll to bottom when user sends a message
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
 
     try {
       // Include file context if files are uploaded
@@ -114,8 +128,13 @@ export default function DemoPage() {
       let assistantMessage = '';
       const decoder = new TextDecoder();
       
-      // Add assistant message placeholder
+      // Add assistant message placeholder and scroll to bottom
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      
+      // Scroll to bottom when assistant starts responding
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -506,6 +525,7 @@ export default function DemoPage() {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
