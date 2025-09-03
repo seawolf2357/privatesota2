@@ -1,5 +1,6 @@
-v0.2 20250903 1604
+v0.2 20250903 2129
   - build success. pnpm
+  - add supabase.
 v0.1.1 20250903 1225
   - adj. memory (db)
     - adj. memory spinner
