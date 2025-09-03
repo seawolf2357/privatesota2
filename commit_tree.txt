@@ -1,10 +1,11 @@
-v0.1.1 20250902 1708
+v0.1.1 20250903 1021.
   - adj. memory (db)
     - adj. memory spinner
       - rm localhost popup.
       - resume conversation
         - abstract title.
         - adj. uploaded.
+          - add pdf reading.
 v0.1 20250902 1047
     - init with Yuri.
     - integrate with other models.

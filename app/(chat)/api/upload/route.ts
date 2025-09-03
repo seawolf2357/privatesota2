@@ -3,6 +3,62 @@ import { auth } from '@/app/(auth)/auth';
 import { put } from '@vercel/blob';
 import Papa from 'papaparse';
 
+// PDF processing with multiple fallback strategies
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  // Strategy 1: Try pdfjs-dist (more reliable)
+  try {
+    const pdfjsLib = await import('pdfjs-dist');
+    
+    // Set worker source for pdfjs-dist
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    
+    const loadingTask = pdfjsLib.getDocument({ data: buffer });
+    const pdf = await loadingTask.promise;
+    
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      fullText += pageText + '\n';
+    }
+    
+    return fullText.trim();
+  } catch (error) {
+    console.log('pdfjs-dist failed, trying pdf-parse:', error.message);
+    
+    // Strategy 2: Try pdf-parse as fallback
+    try {
+      const pdfParse = await import('pdf-parse');
+      const data = await pdfParse.default(buffer);
+      return data.text || '';
+    } catch (parseError) {
+      console.log('pdf-parse also failed, using basic extraction:', parseError.message);
+      
+      // Strategy 3: Basic text extraction from PDF buffer
+      try {
+        const text = buffer.toString('utf8');
+        // Extract readable text patterns from PDF
+        const textMatches = text.match(/[\x20-\x7E\uAC00-\uD7A3]{10,}/g) || [];
+        const extractedText = textMatches
+          .filter(match => !match.includes('obj') && !match.includes('endobj'))
+          .join(' ')
+          .slice(0, 10000);
+        
+        if (extractedText.length > 100) {
+          return extractedText;
+        }
+      } catch (e) {
+        console.error('Basic text extraction failed:', e);
+      }
+    }
+  }
+  
+  return '';
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Skip auth for demo mode
@@ -32,9 +88,44 @@ export async function POST(request: NextRequest) {
     // Process based on file type
     switch (fileExt) {
       case 'pdf':
-        // PDF processing disabled due to server-side limitations
-        processedContent = `[PDF File: ${file.name}]\nSize: ${(file.size / 1024).toFixed(2)} KB\n`;
-        processedContent += 'PDF 내용 분석은 현재 지원되지 않습니다. 텍스트 파일로 변환 후 업로드해주세요.';
+        // Enhanced PDF processing with fallback
+        try {
+          const extractedText = await extractPdfText(buffer);
+          
+          processedContent = `📄 PDF 파일 분석\n\n`;
+          processedContent += `**파일 정보**:\n`;
+          processedContent += `- 파일명: ${file.name}\n`;
+          processedContent += `- 크기: ${(file.size / 1024).toFixed(2)} KB\n\n`;
+          
+          if (extractedText && extractedText.length > 0) {
+            processedContent += `**텍스트 내용**:\n`;
+            
+            // Clean up text
+            let cleanedText = extractedText.replace(/\s+/g, ' ').trim();
+            
+            // Limit text length for very large PDFs
+            if (cleanedText.length > 10000) {
+              processedContent += cleanedText.substring(0, 10000);
+              processedContent += `\n\n... (전체 ${cleanedText.length}자 중 일부만 표시)\n`;
+              processedContent += `\n**요약**: PDF 문서가 매우 크므로 처음 10,000자만 표시했습니다.`;
+            } else {
+              processedContent += cleanedText;
+            }
+          } else {
+            processedContent += `⚠️ PDF 텍스트 추출 실패\n\n`;
+            processedContent += `이 PDF 파일에서 텍스트를 추출할 수 없습니다.\n`;
+            processedContent += `가능한 원인:\n`;
+            processedContent += `- 스캔된 이미지 PDF\n`;
+            processedContent += `- 암호화된 PDF\n`;
+            processedContent += `- 특수 인코딩 사용\n\n`;
+            processedContent += `텍스트 파일로 변환 후 다시 업로드해주세요.`;
+          }
+        } catch (error) {
+          console.error('PDF processing error:', error);
+          // Fallback to basic info if pdf-parse fails
+          processedContent = `[PDF File: ${file.name}]\nSize: ${(file.size / 1024).toFixed(2)} KB\n`;
+          processedContent += `PDF 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
+        }
         break;
 
       case 'csv':
