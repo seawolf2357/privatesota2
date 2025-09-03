@@ -1,3 +1,5 @@
+v0.2 20250903 1604
+  - build success. pnpm
 v0.1.1 20250903 1225
   - adj. memory (db)
     - adj. memory spinner
