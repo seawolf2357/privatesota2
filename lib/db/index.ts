@@ -6,21 +6,42 @@ import * as schema from './schema';
 
 // Determine which database to use based on environment
 const isProduction = process.env.NODE_ENV === 'production';
-const usePostgres = isProduction || process.env.USE_POSTGRES === 'true';
+const isVercel = process.env.VERCEL === '1';
+const useSupabase = process.env.USE_SUPABASE === 'true';
+const usePostgres = isProduction || process.env.USE_POSTGRES === 'true' || useSupabase || isVercel;
 
 // Database client type
 export type DbClient = ReturnType<typeof drizzle> | ReturnType<typeof drizzleSqlite>;
 
 // Create database connection based on environment
 function createDbConnection(): DbClient {
-  if (usePostgres) {
+  // Priority: Supabase > PostgreSQL > SQLite
+  if (useSupabase || isVercel) {
+    // Use Supabase PostgreSQL
+    console.log('🚀 Using Supabase PostgreSQL database');
+    
+    const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+    if (!dbUrl) {
+      throw new Error(
+        'DATABASE_URL is required for Supabase. ' +
+        'Please check your .env.local file'
+      );
+    }
+    
+    const client = postgres(dbUrl, {
+      prepare: false, // Required for Supabase pooler
+      ssl: 'require',
+    });
+    
+    return drizzle(client, { schema });
+  } else if (usePostgres) {
     // Production: Use PostgreSQL
     console.log('🐘 Using PostgreSQL database');
     
     if (!process.env.POSTGRES_URL) {
       throw new Error(
         'POSTGRES_URL is required for production. ' +
-        'For local development, use SQLite by setting NODE_ENV=development'
+        'For local development, use SQLite by setting USE_SUPABASE=false'
       );
     }
     
@@ -31,7 +52,7 @@ function createDbConnection(): DbClient {
     // Development: Use SQLite
     console.log('📦 Using SQLite database (local development)');
     
-    const dbPath = process.env.SQLITE_PATH || './data/chat.db';
+    const dbPath = process.env.DATABASE_URL_SQLITE || process.env.SQLITE_PATH || './data/chat.db';
     
     // Ensure data directory exists
     const fs = require('fs');
@@ -45,6 +66,11 @@ function createDbConnection(): DbClient {
     
     // Enable WAL mode for better performance
     sqlite.pragma('journal_mode = WAL');
+    sqlite.pragma('busy_timeout = 5000');
+    sqlite.pragma('synchronous = NORMAL');
+    sqlite.pragma('cache_size = -20000');
+    sqlite.pragma('foreign_keys = ON');
+    sqlite.pragma('temp_store = MEMORY');
     
     return drizzleSqlite(sqlite, { schema });
   }
@@ -57,4 +83,23 @@ export const db = createDbConnection() as any;
 export const isUsingPostgres = () => usePostgres;
 
 // Helper to get database type
-export const getDatabaseType = () => usePostgres ? 'postgresql' : 'sqlite';
+export const getDatabaseType = () => {
+  if (useSupabase) return 'supabase';
+  if (usePostgres) return 'postgresql';
+  return 'sqlite';
+};
+
+// Get database info for debugging
+export async function getDatabaseInfo() {
+  const dbType = getDatabaseType();
+  
+  return {
+    type: dbType,
+    environment: process.env.NODE_ENV || 'development',
+    isVercel: process.env.VERCEL === '1',
+    useSupabase: process.env.USE_SUPABASE === 'true',
+    connectionString: dbType === 'supabase' || dbType === 'postgresql'
+      ? (process.env.DATABASE_URL || process.env.POSTGRES_URL || '').replace(/:[^:]*@/, ':***@') // Hide password
+      : process.env.DATABASE_URL_SQLITE || './data/chat.db',
+  };
+}

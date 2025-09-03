@@ -3,11 +3,15 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "USE_SUPABASE": "true",
+    "USE_POSTGRES": "true"
   },
   "build": {
     "env": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "USE_SUPABASE": "true",
+      "USE_POSTGRES": "true"
     }
   }
 }

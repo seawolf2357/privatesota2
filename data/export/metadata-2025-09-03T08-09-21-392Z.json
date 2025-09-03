@@ -1,0 +1,31 @@
+{
+  "exportDate": "2025-09-03T08:09:21.431Z",
+  "sourceDatabase": "./data/chat.db",
+  "tables": [
+    {
+      "name": "UserMemory",
+      "rowCount": 3
+    },
+    {
+      "name": "UploadedFile",
+      "rowCount": 0
+    },
+    {
+      "name": "SearchCache",
+      "rowCount": 0
+    },
+    {
+      "name": "Chat",
+      "rowCount": 2
+    },
+    {
+      "name": "Message_v2",
+      "rowCount": 4
+    },
+    {
+      "name": "User",
+      "rowCount": 1
+    }
+  ],
+  "totalRows": 10
+}

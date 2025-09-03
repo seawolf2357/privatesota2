@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo --port 3006",
-    "build": "tsx lib/db/migrate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint && biome lint --write --unsafe",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
@@ -20,6 +20,15 @@
     "db:migrate:sqlite": "npx tsx lib/db/migrate-sqlite.ts",
     "db:studio:sqlite": "drizzle-kit studio --config=drizzle.config.sqlite.ts",
     "db:setup": "npm run db:generate:sqlite && npm run db:migrate:sqlite",
+    "db:generate:supabase": "drizzle-kit generate --config=drizzle.config.supabase.ts",
+    "db:push:supabase": "drizzle-kit push --config=drizzle.config.supabase.ts",
+    "db:migrate:supabase": "tsx scripts/migrate-supabase.ts",
+    "db:studio:supabase": "drizzle-kit studio --config=drizzle.config.supabase.ts",
+    "db:export:sqlite": "tsx scripts/export-sqlite.ts",
+    "db:import:supabase": "tsx scripts/import-supabase.ts",
+    "db:validate:supabase": "tsx scripts/validate-supabase.ts",
+    "supabase:setup": "npm run db:generate:supabase && npm run db:push:supabase",
+    "supabase:test": "tsx scripts/test-supabase.ts",
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
