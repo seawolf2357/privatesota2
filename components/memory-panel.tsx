@@ -77,6 +77,13 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
       });
       if (response.ok) {
         const data = await response.json();
+        console.log('[MemoryPanel] Fetched memories:', data);
+      console.log('[MemoryPanel] First memory date check:', {
+        raw: data[0]?.updatedAt,
+        parsed: data[0]?.updatedAt ? new Date(data[0].updatedAt) : null,
+        isValid: data[0]?.updatedAt ? !isNaN(Date.parse(data[0].updatedAt)) : false
+      });
+        // 원본 데이터 그대로 사용 (날짜 조작 제거)
         setMemories(data);
       }
     } catch (error) {
@@ -199,7 +206,17 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
                           {memory.content}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(memory.updatedAt).toLocaleString('ko-KR')}
+                          {memory.updatedAt && !isNaN(Date.parse(memory.updatedAt))
+                            ? new Date(memory.updatedAt).toLocaleString('ko-KR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                              })
+                            : '날짜 정보 없음'
+                          }
                         </p>
                       </div>
                       <Popover 

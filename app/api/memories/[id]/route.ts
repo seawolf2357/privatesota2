@@ -4,9 +4,10 @@ import { MemoryManager } from '@/lib/ai/memory-manager';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     const isDemoMode = request.headers.get('x-demo-mode') === 'true';
     
@@ -17,7 +18,7 @@ export async function DELETE(
     const userId = session?.user?.id || 'demo-user';
     const memoryManager = new MemoryManager(userId);
     
-    const success = await memoryManager.deleteMemory(params.id);
+    const success = await memoryManager.deleteMemory(id);
     
     if (success) {
       return NextResponse.json({ status: 'success' });

@@ -1,4 +1,4 @@
-v0.1.1 20250903 1056.
+v0.1.1 20250903 1225
   - adj. memory (db)
     - adj. memory spinner
       - rm localhost popup.
@@ -6,6 +6,7 @@ v0.1.1 20250903 1056.
         - abstract title.
         - adj. uploaded.
           - add pdf reading. link not work!
+          - fixing date.
 v0.1 20250902 1047
     - init with Yuri.
     - integrate with other models.

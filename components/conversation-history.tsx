@@ -39,6 +39,9 @@ export function ConversationHistory({ refreshKey, onSelectConversation, onLoadMe
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[ConversationHistory] Fetched conversations:', data.conversations);
+        
+        // 원본 데이터 그대로 사용 (날짜 조작 제거)
         setConversations(data.conversations || []);
       }
     } catch (error) {
@@ -117,10 +120,13 @@ export function ConversationHistory({ refreshKey, onSelectConversation, onLoadMe
                   {conversation.title}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(conversation.createdAt), {
-                    addSuffix: true,
-                    locale: ko,
-                  })}
+                  {conversation.createdAt && !isNaN(Date.parse(conversation.createdAt))
+                    ? formatDistanceToNow(new Date(conversation.createdAt), {
+                        addSuffix: true,
+                        locale: ko,
+                      })
+                    : '날짜 정보 없음'
+                  }
                 </p>
               </div>
             </div>
