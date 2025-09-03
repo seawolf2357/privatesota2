@@ -17,14 +17,14 @@ export async function GET(
     const { id: conversationId } = await params;
 
     // 대화의 메시지들 가져오기
-    const messages = await db
+    const messages = await (db as any)
       .select()
       .from(message)
       .where(eq(message.chatId, conversationId))
       .orderBy(message.createdAt);
 
     // parts 형식을 content 형식으로 변환
-    const formattedMessages = messages.map(msg => ({
+    const formattedMessages = messages.map((msg: any) => ({
       id: msg.id,
       role: msg.role,
       content: msg.parts[0]?.text || '',
@@ -54,7 +54,7 @@ export async function PUT(
     const { messages: chatMessages } = body;
 
     // 기존 메시지 삭제
-    await db
+    await (db as any)
       .delete(message)
       .where(eq(message.chatId, conversationId));
 
@@ -69,7 +69,7 @@ export async function PUT(
         createdAt: new Date(),
       }));
 
-      await db.insert(message).values(messagesToInsert);
+      await (db as any).insert(message).values(messagesToInsert);
     }
 
     // AI를 사용한 제목 생성 및 업데이트
@@ -102,7 +102,7 @@ export async function PUT(
           title = userMessages[0].content.slice(0, 50);
         }
 
-        await db
+        await (db as any)
           .update(chat)
           .set({ title })
           .where(eq(chat.id, conversationId));
@@ -110,7 +110,7 @@ export async function PUT(
         console.error('Error generating title:', error);
         // 에러시 간단한 제목 사용
         const simpleTitle = userMessages[0].content.slice(0, 50);
-        await db
+        await (db as any)
           .update(chat)
           .set({ title: simpleTitle })
           .where(eq(chat.id, conversationId));

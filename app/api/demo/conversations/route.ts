@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
-    const conversations = await db
+    const conversations = await (db as any)
       .select()
       .from(chat)
       .where(eq(chat.userId, 'demo-user'))
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const now = new Date();
 
     // 대화 생성
-    await db.insert(chat).values({
+    await (db as any).insert(chat).values({
       id: conversationId,
       userId: 'demo-user',
       title: title || '새 대화',
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         createdAt: new Date(),
       }));
 
-      await db.insert(message).values(messagesToInsert);
+      await (db as any).insert(message).values(messagesToInsert);
     }
 
     return NextResponse.json({ 
@@ -88,14 +88,14 @@ export async function DELETE(request: NextRequest) {
 
     // 관련된 모든 데이터 삭제
     // 1. 먼저 메시지 삭제
-    const deletedMessages = await db
+    const deletedMessages = await (db as any)
       .delete(message)
       .where(eq(message.chatId, conversationId));
     
     console.log(`Deleted ${deletedMessages} messages for conversation ${conversationId}`);
     
     // 2. 그 다음 대화 삭제
-    const deletedChat = await db
+    const deletedChat = await (db as any)
       .delete(chat)
       .where(eq(chat.id, conversationId));
     

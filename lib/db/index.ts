@@ -51,7 +51,7 @@ function createDbConnection(): DbClient {
 }
 
 // Export the database client
-export const db = createDbConnection();
+export const db = createDbConnection() as any;
 
 // Helper to check if using PostgreSQL
 export const isUsingPostgres = () => usePostgres;

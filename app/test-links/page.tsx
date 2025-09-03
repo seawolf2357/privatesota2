@@ -41,7 +41,7 @@ https://www.naver.com
       <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900 rounded">
         <h3 className="font-semibold">디버깅 정보:</h3>
         <p>브라우저 개발자 도구를 열고 Console 탭을 확인하세요.</p>
-        <p>링크를 클릭하면 "Link clicked:" 메시지가 나타나야 합니다.</p>
+        <p>링크를 클릭하면 &quot;Link clicked:&quot; 메시지가 나타나야 합니다.</p>
       </div>
     </div>
   );

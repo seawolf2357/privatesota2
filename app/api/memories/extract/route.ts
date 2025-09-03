@@ -129,7 +129,7 @@ ${conversationText}`;
         try {
           // Check if similar memory exists (relaxed duplicate check)
           // Only check for exact content match within the same category
-          const existing = await db
+          const existing = await (db as any)
             .select()
             .from(userMemory)
             .where(
@@ -157,7 +157,7 @@ ${conversationText}`;
               : memory.content;
             
             // Insert new memory with explicit ID and timestamps
-            await db.insert(userMemory).values({
+            await (db as any).insert(userMemory).values({
               id: memoryId,
               userId: actualUserId,
               category: memory.category,

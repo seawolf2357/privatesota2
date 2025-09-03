@@ -27,7 +27,7 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
     
     return fullText.trim();
   } catch (error) {
-    console.log('pdfjs-dist failed, trying pdf-parse:', error.message);
+    console.log('pdfjs-dist failed, trying pdf-parse:', error instanceof Error ? error.message : 'Unknown error');
     
     // Strategy 2: Try pdf-parse as fallback
     try {
@@ -35,7 +35,7 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
       const data = await pdfParse.default(buffer);
       return data.text || '';
     } catch (parseError) {
-      console.log('pdf-parse also failed, using basic extraction:', parseError.message);
+      console.log('pdf-parse also failed, using basic extraction:', parseError instanceof Error ? parseError.message : 'Unknown error');
       
       // Strategy 3: Basic text extraction from PDF buffer
       try {
@@ -132,17 +132,16 @@ export async function POST(request: NextRequest) {
         // Enhanced CSV processing from AGI Space
         try {
           const text = buffer.toString('utf-8');
-          const result = Papa.parse(text, {
+          const result: any = Papa.parse(text, {
             header: true,
             skipEmptyLines: true,
-            dynamicTyping: true,
-            encoding: 'utf-8'
+            dynamicTyping: true
           });
           
           processedContent = `CSV 데이터 분석:\n`;
-          processedContent += `총 ${result.data.length}개의 행\n`;
+          processedContent += `총 ${result.data?.length || 0}개의 행\n`;
           
-          if (result.meta.fields) {
+          if (result.meta?.fields) {
             processedContent += `헤더: ${result.meta.fields.join(', ')}\n\n`;
           }
           

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { memo, useEffect, useMemo, useState } from 'react';
-import DataGrid, { textEditor } from 'react-data-grid';
+const DataGrid = require('react-data-grid').default || require('react-data-grid');
+const textEditor = require('react-data-grid').textEditor;
 import { parse, unparse } from 'papaparse';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
@@ -116,7 +117,7 @@ const PureSpreadsheetEditor = ({
       rows={localRows}
       enableVirtualization
       onRowsChange={handleRowsChange}
-      onCellClick={(args) => {
+      onCellClick={(args: any) => {
         if (args.column.key !== 'rowNumber') {
           args.selectCell(true);
         }

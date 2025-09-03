@@ -2,8 +2,8 @@ import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
-  createOpenAI,
 } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { xai } from '@ai-sdk/xai';
 import {
   artifactModel,
@@ -25,7 +25,7 @@ const fireworks = createOpenAI({
 });
 
 // Yuri model configuration
-const YURI_MODEL = YURI_CONFIG.model;
+const YURI_MODEL = YURI_CONFIG.fireworksModel;
 
 // Custom provider with Fireworks integration
 export const myFireworksProvider = isTestEnvironment

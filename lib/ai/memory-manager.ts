@@ -44,7 +44,7 @@ export class MemoryManager {
 
       // Build conversation text
       const conversationText = messages
-        .map(msg => {
+        .map((msg: any) => {
           const role = msg.role === 'user' ? '사용자' : 'AI';
           const content = typeof msg.parts === 'string' 
             ? msg.parts 
@@ -85,7 +85,6 @@ Be specific and include context. Extract ALL important information.
 ${conversationText}`;
 
       const response = await myFriendliProvider.languageModel('chat-model').doGenerate({
-        inputFormat: 'messages',
         messages: [
           { role: 'system', content: extractionPrompt },
           { role: 'user', content: '위 대화에서 기억해야 할 정보를 추출하세요.' }
@@ -94,10 +93,10 @@ ${conversationText}`;
           type: 'regular',
           temperature: 0.3,
         },
-      });
+      } as any);
 
       // Parse the AI response
-      const responseText = response.text || '';
+      const responseText = (response as any).text || (response.content?.[0] as any)?.text || '';
       const jsonMatch = responseText.match(/\[[\s\S]*\]/);
       
       if (!jsonMatch) {
