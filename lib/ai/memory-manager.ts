@@ -165,6 +165,8 @@ ${conversationText}`;
               extractedFrom: 'conversation',
               source: 'jetXA',
             },
+            createdAt: new Date(),
+            updatedAt: new Date(),
           })
           .returning();
 
