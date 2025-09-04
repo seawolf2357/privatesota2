@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 // GET - 특정 대화의 메시지 가져오기
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const isDemoMode = request.headers.get('x-demo-mode') === 'true';
@@ -14,7 +14,9 @@ export async function GET(
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
-    const { id: conversationId } = await params;
+    const { id: conversationId } = params;
+    
+    console.log('[GET Conversation] Fetching messages for conversation:', conversationId);
 
     // 대화의 메시지들 가져오기
     const messages = await (db as any)
@@ -22,14 +24,65 @@ export async function GET(
       .from(message)
       .where(eq(message.chatId, conversationId))
       .orderBy(message.createdAt);
+    
+    console.log('[GET Conversation] Found messages:', messages.length);
+    if (messages.length > 0) {
+      console.log('[GET Conversation] First message structure:', JSON.stringify(messages[0], null, 2));
+    }
 
     // parts 형식을 content 형식으로 변환
-    const formattedMessages = messages.map((msg: any) => ({
-      id: msg.id,
-      role: msg.role,
-      content: msg.parts[0]?.text || '',
-      createdAt: msg.createdAt,
-    }));
+    const formattedMessages = messages.map((msg: any) => {
+      // parts가 배열인지 확인하고 적절히 처리
+      let content = '';
+      
+      // 디버깅을 위한 로깅
+      if (messages.length > 0 && msg === messages[0]) {
+        console.log('[GET Conversation] First message parts:', msg.parts);
+        console.log('[GET Conversation] Parts type:', typeof msg.parts);
+      }
+      
+      if (msg.parts) {
+        if (Array.isArray(msg.parts)) {
+          // PostgreSQL: parts is an array
+          content = msg.parts[0]?.text || '';
+        } else if (typeof msg.parts === 'object' && !Array.isArray(msg.parts)) {
+          // parts가 객체인 경우
+          if (msg.parts.text) {
+            content = msg.parts.text;
+          } else if (msg.parts[0]) {
+            content = msg.parts[0].text || '';
+          }
+        } else if (typeof msg.parts === 'string') {
+          // SQLite might store as string
+          try {
+            const parsed = JSON.parse(msg.parts);
+            if (Array.isArray(parsed)) {
+              content = parsed[0]?.text || '';
+            } else if (parsed.text) {
+              content = parsed.text;
+            }
+          } catch {
+            content = msg.parts;
+          }
+        }
+      }
+      
+      // content가 여전히 비어있으면 deprecated content 필드 확인
+      if (!content && msg.content) {
+        if (typeof msg.content === 'string') {
+          content = msg.content;
+        } else if (typeof msg.content === 'object' && msg.content.text) {
+          content = msg.content.text;
+        }
+      }
+      
+      return {
+        id: msg.id,
+        role: msg.role,
+        content: content,
+        createdAt: msg.createdAt,
+      };
+    });
 
     return NextResponse.json({ messages: formattedMessages });
   } catch (error) {
@@ -41,7 +94,7 @@ export async function GET(
 // PUT - 대화 업데이트 (메시지 추가)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const isDemoMode = request.headers.get('x-demo-mode') === 'true';
@@ -49,7 +102,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
-    const { id: conversationId } = await params;
+    const { id: conversationId } = params;
     const body = await request.json();
     const { messages: chatMessages } = body;
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { MemoryManager } from '@/lib/ai/memory-manager';
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,9 +10,10 @@ export async function GET(request: NextRequest) {
     
     // Get userId from query params or session
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || session?.user?.id || 'demo-user';
+    const userId = searchParams.get('userId') || session?.user?.id || DEMO_USER_ID;
     
-    if (!isDemoMode && !session?.user) {
+    // Allow demo mode or authenticated users
+    if (userId !== DEMO_USER_ID && !isDemoMode && !session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { category, content, confidence = 1.0, sessionId } = body;
     
-    const userId = session?.user?.id || 'demo-user';
+    const userId = session?.user?.id || DEMO_USER_ID;
     const memoryManager = new MemoryManager(userId);
     
     const memoryId = await memoryManager.saveMemory(

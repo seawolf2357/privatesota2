@@ -49,7 +49,17 @@ export function FileUpload({ sessionId, uploadedFiles = [], onFilesChange }: Fil
         }
 
         const data = await response.json();
-        newFiles.push(data);
+        console.log('File uploaded:', data);
+        
+        // 파일 정보와 처리된 내용을 포함하여 저장
+        const uploadedFile: UploadedFile = {
+          fileId: data.fileId,
+          filename: data.filename,
+          fileType: data.fileType,
+          processedContent: data.processedContent || ''
+        };
+        
+        newFiles.push(uploadedFile);
         toast.success(`${file.name} 업로드 완료`);
       } catch (error) {
         console.error('Upload error:', error);
@@ -58,6 +68,7 @@ export function FileUpload({ sessionId, uploadedFiles = [], onFilesChange }: Fil
     }
 
     const updatedFiles = [...uploadedFiles, ...newFiles];
+    console.log('Updated files:', updatedFiles);
     onFilesChange?.(updatedFiles);
     setIsUploading(false);
 

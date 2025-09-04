@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       selectedVisibilityType,
     }: {
       id: string;
-      message: ChatMessage;
+      message: ChatMessage & { attachments?: any[] };
       selectedChatModel: ChatModel['id'];
       selectedVisibilityType: VisibilityType;
     } = requestBody;
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
           id: message.id,
           role: 'user',
           parts: message.parts,
-          attachments: [],
+          attachments: message.attachments || [],
           createdAt: new Date(),
         },
       ],
@@ -152,12 +152,47 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Process attachments for multimodal content if available
+    const processedMessages = uiMessages.map((msg: any) => {
+      if (msg.attachments && msg.attachments.length > 0) {
+        // Add file content to message parts for multimodal processing
+        const fileParts = msg.attachments.map((attachment: any) => {
+          if (attachment.content) {
+            // If we have extracted content, add it as text
+            return {
+              type: 'text',
+              text: `[File: ${attachment.name}]\n${attachment.content}`,
+            };
+          } else if (attachment.data && attachment.type?.startsWith('image/')) {
+            // For images, create image part with base64 data
+            return {
+              type: 'image',
+              image: `data:${attachment.type};base64,${attachment.data}`,
+            };
+          } else if (attachment.data && attachment.type === 'application/pdf') {
+            // For PDFs with base64 data
+            return {
+              type: 'text',
+              text: `[PDF Document: ${attachment.name}]\nPlease analyze this document.`,
+            };
+          }
+          return null;
+        }).filter(Boolean);
+        
+        return {
+          ...msg,
+          parts: [...(msg.parts || []), ...fileParts],
+        };
+      }
+      return msg;
+    });
+
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints, useYuri }),
-          messages: convertToModelMessages(uiMessages),
+          messages: convertToModelMessages(processedMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
@@ -200,7 +235,7 @@ export async function POST(request: Request) {
             role: message.role,
             parts: message.parts,
             createdAt: new Date(),
-            attachments: [],
+            attachments: message.attachments || [],
             chatId: id,
           })),
         });

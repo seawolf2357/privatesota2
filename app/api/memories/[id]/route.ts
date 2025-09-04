@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { MemoryManager } from '@/lib/ai/memory-manager';
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 
 export async function DELETE(
   request: NextRequest,
@@ -15,7 +16,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session?.user?.id || 'demo-user';
+    const userId = session?.user?.id || DEMO_USER_ID;
     const memoryManager = new MemoryManager(userId);
     
     const success = await memoryManager.deleteMemory(id);

@@ -69,7 +69,7 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
   const fetchMemories = async () => {
     try {
       setLoading(true);
-      const isDemoMode = userId === 'demo-user' || userId?.startsWith('demo-');
+      const isDemoMode = userId === '00000000-0000-0000-0000-000000000001' || userId?.startsWith('demo-');
       const response = await fetch(`/api/memories?userId=${userId}`, {
         headers: {
           'x-demo-mode': isDemoMode ? 'true' : 'false',
@@ -95,7 +95,7 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
 
   const deleteMemory = async (memoryId: string) => {
     try {
-      const isDemoMode = userId === 'demo-user' || userId?.startsWith('demo-');
+      const isDemoMode = userId === '00000000-0000-0000-0000-000000000001' || userId?.startsWith('demo-');
       const response = await fetch(`/api/memories/${memoryId}`, {
         method: 'DELETE',
         headers: {

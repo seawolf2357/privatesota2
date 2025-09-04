@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Conversation Test</title>
+</head>
+<body>
+    <h1>Conversation Messages Test</h1>
+    <div id="messages"></div>
+    
+    <script>
+        async function loadMessages() {
+            try {
+                const response = await fetch('http://localhost:3006/api/demo/conversations/467bf3e2-ca29-4064-992f-39380a155653', {
+                    headers: {
+                        'x-demo-mode': 'true'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '<h2>Messages:</h2>';
+                
+                data.messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.style.padding = '10px';
+                    msgDiv.style.margin = '5px';
+                    msgDiv.style.border = '1px solid #ccc';
+                    msgDiv.innerHTML = `
+                        <strong>Role:</strong> ${msg.role}<br>
+                        <strong>Content:</strong> ${msg.content}<br>
+                        <strong>Created:</strong> ${msg.createdAt}
+                    `;
+                    messagesDiv.appendChild(msgDiv);
+                });
+                
+                // Also log to console
+                console.log('Messages:', data.messages);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('messages').innerHTML = 'Error: ' + error.message;
+            }
+        }
+        
+        loadMessages();
+    </script>
+</body>
+</html>

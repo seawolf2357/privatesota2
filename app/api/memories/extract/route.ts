@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 
 // Simple memory extraction without database
 export async function POST(request: NextRequest) {
@@ -64,9 +65,12 @@ Be specific and include context. Extract ALL important information.
 대화 내용:
 ${conversationText}`;
 
+    // Simple fallback extraction if AI fails
+    let responseText = '';
+    
     try {
       // Call Friendli AI directly
-      const FRIENDLI_API_KEY = process.env.FRIENDLI_API_KEY || 'flp_ZMMUt1CuH2dy0RLXxnbjwsfiZufsVqRu6w6ko2d3mrHc4';
+      const FRIENDLI_API_KEY = process.env.FRIENDLI_API_KEY || 'flp_ZMMUt1CuH2dy0RLXxnbjwsfiZufsVqRu6w6ko2d3mrHc';
       const FRIENDLI_BASE_URL = 'https://api.friendli.ai/dedicated/v1/chat/completions';
       const FRIENDLI_MODEL = 'dep86pjolcjjnv8';
       
@@ -92,7 +96,102 @@ ${conversationText}`;
       }
 
       const aiData = await aiResponse.json();
-      const responseText = aiData.choices?.[0]?.message?.content || '';
+      responseText = aiData.choices?.[0]?.message?.content || '';
+    } catch (aiError) {
+      console.log('[Memory Extract API] AI failed, using simple extraction');
+      // Simple rule-based extraction as fallback
+      const extractedMemories = [];
+      
+      // Extract user message from conversationMessages
+      const userMessages = conversationMessages.filter((m: any) => m.role === 'user').map((m: any) => m.content);
+      
+      // Get the LATEST user message(s) - focus on new content in continued conversations
+      if (userMessages.length > 0) {
+        // Take the last 2 user messages (most recent interactions)
+        const recentMessages = userMessages.slice(-2);
+        
+        for (let i = 0; i < recentMessages.length; i++) {
+          const message = recentMessages[i].trim();
+          if (message.length > 0) {
+            // Check for specific patterns to categorize better
+            let category = 'general';
+            let content = '';
+            
+            // Check for dates/appointments
+            if (message.match(/\d{1,2}[월일]/i) || message.includes('내일') || message.includes('오늘')) {
+              category = 'important_dates';
+              content = `일정 관련: ${message}`;
+            }
+            // Check for tasks
+            else if (message.includes('해야') || message.includes('할 일') || message.includes('신청')) {
+              category = 'tasks';
+              content = `할 일: ${message}`;
+            }
+            // Check for questions about files
+            else if (message.includes('파일') || message.includes('첨부') || message.includes('문서')) {
+              category = 'notes';
+              content = `파일 관련 질문: ${message}`;
+            }
+            // Default: save as general but with context
+            else {
+              const messageIndex = userMessages.indexOf(message);
+              const conversationContext = messageIndex > 0 ? '(대화 중)' : '(대화 시작)';
+              content = `사용자 메시지 ${conversationContext}: "${message}"`;
+            }
+            
+            // Only add if we don't already have a very similar memory
+            const isDuplicate = extractedMemories.some(m => 
+              m.content.includes(message.substring(0, 20))
+            );
+            
+            if (!isDuplicate) {
+              extractedMemories.push({
+                category,
+                content,
+                confidence: i === recentMessages.length - 1 ? 0.9 : 0.7 // Latest message has higher confidence
+              });
+            }
+          }
+        }
+      }
+      
+      // Extract AI responses that might contain important information
+      const aiMessages = conversationMessages.filter((m: any) => m.role === 'assistant').map((m: any) => m.content);
+      if (aiMessages.length > 0) {
+        // Focus on the LATEST AI response (most relevant)
+        const lastAiMessage = aiMessages[aiMessages.length - 1];
+        
+        // Extract specific information patterns from AI response
+        if (lastAiMessage.includes('분석 결과') || lastAiMessage.includes('파일')) {
+          extractedMemories.push({
+            category: 'notes',
+            content: `AI 파일 분석: ${lastAiMessage.substring(0, 150)}...`,
+            confidence: 0.6
+          });
+        } else if (lastAiMessage.includes('날짜') || lastAiMessage.includes('2025년')) {
+          // Extract date-related information
+          const dateMatch = lastAiMessage.match(/\d{4}년.*?[월일]/);
+          if (dateMatch) {
+            extractedMemories.push({
+              category: 'important_dates',
+              content: `날짜 정보: ${dateMatch[0]}`,
+              confidence: 0.8
+            });
+          }
+        } else if (lastAiMessage.length > 50) {
+          // For other substantial responses, save a summary
+          extractedMemories.push({
+            category: 'notes',
+            content: `최근 대화 요약: ${lastAiMessage.substring(0, 100)}...`,
+            confidence: 0.5
+          });
+        }
+      }
+      
+      responseText = JSON.stringify(extractedMemories);
+    }
+    
+    try {
       
       console.log('[Memory Extract API] AI Response received');
       console.log('[Memory Extract API] Response text:', responseText);
@@ -118,7 +217,7 @@ ${conversationText}`;
       const { userMemory } = await import('@/lib/db/schema');
       const { eq, and } = await import('drizzle-orm');
       
-      const actualUserId = userId || session?.user?.id || 'demo-user';
+      const actualUserId = userId || session?.user?.id || DEMO_USER_ID;
       console.log('[Memory Extract API] Actual User ID for saving:', actualUserId);
       let savedCount = 0;
 
@@ -157,17 +256,24 @@ ${conversationText}`;
               : memory.content;
             
             // Insert new memory with explicit ID and timestamps
+            // sourceSessionId should be a conversation ID (UUID), not session ID
+            // If sessionId starts with 'demo-session-', it's not a valid UUID
+            const sourceId = sessionId && sessionId.startsWith('demo-session-') 
+              ? null 
+              : sessionId;
+            
             await (db as any).insert(userMemory).values({
               id: memoryId,
               userId: actualUserId,
               category: memory.category,
               content: contentToSave,
               confidence: memory.confidence || 1.0,
-              sourceSessionId: sessionId,
+              sourceSessionId: sourceId, // Can be null, it's optional
               metadata: {
                 extractedFrom: 'conversation',
                 source: 'jetXA',
                 forceSaved: forceSave && existing.length > 0,
+                originalSessionId: sessionId, // Store original session ID in metadata
               },
               createdAt: now,
               updatedAt: now,
@@ -211,8 +317,14 @@ ${conversationText}`;
     
   } catch (error) {
     console.error('Error in memory extraction:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { error: 'Failed to extract memories' },
+      { 
+        error: 'Failed to extract memories',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        success: false,
+        count: 0
+      },
       { status: 500 }
     );
   }

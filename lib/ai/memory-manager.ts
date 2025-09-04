@@ -123,33 +123,70 @@ ${conversationText}`;
     sourceSessionId?: string
   ): Promise<string> {
     try {
-      // Check if similar memory exists
+      // Check if similar memory exists (allow variations over time)
       const existing = await db
         .select()
         .from(userMemory)
         .where(
           and(
             eq(userMemory.userId, this.userId),
-            eq(userMemory.category, category),
-            eq(userMemory.content, content)
+            eq(userMemory.category, category)
           )
         )
-        .limit(1);
+        .orderBy(desc(userMemory.updatedAt));
 
-      if (existing.length > 0) {
-        // Update confidence if memory already exists
-        const newConfidence = Math.min(1.0, (existing[0].confidence as number || 0) + 0.1);
+      // Check for duplicate or similar content
+      let isDuplicate = false;
+      let existingMemory = null;
+      
+      for (const memory of existing) {
+        // Exact match check
+        if (memory.content === content) {
+          isDuplicate = true;
+          existingMemory = memory;
+          break;
+        }
         
-        await db
-          .update(userMemory)
-          .set({
-            confidence: newConfidence,
-            updatedAt: new Date(),
-          })
-          .where(eq(userMemory.id, existing[0].id));
+        // Similarity check (for important dates and tasks, allow updates)
+        if (category === 'important_dates' || category === 'tasks') {
+          // For dates and tasks, check if it's about the same subject
+          const contentWords = content.toLowerCase().split(/\s+/);
+          const memoryWords = memory.content.toLowerCase().split(/\s+/);
+          const commonWords = contentWords.filter(word => 
+            memoryWords.includes(word) && word.length > 3
+          );
+          
+          // If >60% words match, consider it an update
+          if (commonWords.length > contentWords.length * 0.6) {
+            isDuplicate = true;
+            existingMemory = memory;
+            break;
+          }
+        }
+      }
 
-        console.log(`[MemoryManager] Updated existing memory: ${category} - ${content.substring(0, 50)}...`);
-        return existing[0].id;
+      if (isDuplicate && existingMemory) {
+        // Only update if content is different or it's been >1 hour
+        const hoursSinceUpdate = (Date.now() - new Date(existingMemory.updatedAt).getTime()) / (1000 * 60 * 60);
+        
+        if (existingMemory.content !== content || hoursSinceUpdate > 1) {
+          // Update with new content or refresh timestamp
+          await db
+            .update(userMemory)
+            .set({
+              content: content,
+              confidence: Math.min(1.0, (existingMemory.confidence as number || 0) + 0.1),
+              updatedAt: new Date(),
+              sourceSessionId: sourceSessionId || existingMemory.sourceSessionId,
+            })
+            .where(eq(userMemory.id, existingMemory.id));
+
+          console.log(`[MemoryManager] Updated memory: ${category} - ${content.substring(0, 50)}...`);
+          return existingMemory.id;
+        } else {
+          console.log(`[MemoryManager] Skipped duplicate memory: ${category} - ${content.substring(0, 50)}...`);
+          return existingMemory.id;
+        }
       } else {
         // Create new memory
         const result = await db

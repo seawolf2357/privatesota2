@@ -7,9 +7,20 @@ const textPartSchema = z.object({
 
 const filePartSchema = z.object({
   type: z.enum(['file']),
-  mediaType: z.enum(['image/jpeg', 'image/png']),
+  mediaType: z.enum([
+    'image/jpeg', 
+    'image/png', 
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'text/csv',
+    'text/plain',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ]),
   name: z.string().min(1).max(100),
-  url: z.string().url(),
+  url: z.string().url().optional(),
+  data: z.string().optional(), // Base64 encoded data for multimodal
+  content: z.string().optional(), // Extracted text content
 });
 
 const partSchema = z.union([textPartSchema, filePartSchema]);
@@ -20,8 +31,16 @@ export const postRequestBodySchema = z.object({
     id: z.string().uuid(),
     role: z.enum(['user']),
     parts: z.array(partSchema),
+    attachments: z.array(z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      url: z.string().optional(),
+      data: z.string().optional(),
+      content: z.string().optional(),
+    })).optional(),
   }),
-  selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning']),
+  selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning', 'jetxa-model', 'yuri-model']),
   selectedVisibilityType: z.enum(['public', 'private']),
 });
 

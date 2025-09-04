@@ -1,11 +1,21 @@
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { ChatSettings } from '@/components/chat-settings';
+import { FileUpload } from '@/components/file-upload';
+import { YuriBadge } from '@/components/yuri-badge';
+import { ModelSelector } from '@/components/model-selector';
+import { MemoryPanel } from '@/components/memory-panel';
+import { ConversationHistory } from '@/components/conversation-history';
+import { DEFAULT_MODEL_ID } from '@/lib/ai/models-config';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Brain, Clock, Settings, Upload, MessageSquare, RotateCw } from 'lucide-react';
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
+
 
 export default function DemoPage() {
-  redirect('/');
-}
-
-// Original demo page code preserved below (unused)
-function OriginalDemoPage() {
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -103,10 +113,14 @@ function OriginalDemoPage() {
       // Include file context if files are uploaded
       let messageWithContext = userMessage;
       if (uploadedFiles.length > 0) {
-        const fileContext = uploadedFiles.map(f => 
-          `[Uploaded File: ${f.filename}]\n${f.processedContent}`
-        ).join('\n\n');
+        console.log('Uploaded files:', uploadedFiles);
+        const fileContext = uploadedFiles.map(f => {
+          const content = f.processedContent || '[파일 내용을 읽을 수 없습니다]';
+          console.log(`File: ${f.filename}, Content length: ${content.length}`);
+          return `[Uploaded File: ${f.filename}]\n${content}`;
+        }).join('\n\n');
         messageWithContext = `${fileContext}\n\n사용자 질문: ${userMessage}`;
+        console.log('Message with context:', messageWithContext.substring(0, 500));
       }
 
       // Call the enhanced demo chat API with web search and memory
@@ -120,7 +134,7 @@ function OriginalDemoPage() {
             content: messageWithContext,
           },
           webSearchEnabled,
-          userId: 'demo-user',
+          userId: DEMO_USER_ID,
           sessionId,
           includeMemories: selfLearningEnabled,
         }),
@@ -219,7 +233,7 @@ function OriginalDemoPage() {
         body: JSON.stringify({
           messages: messages,
           sessionId: sessionId,
-          userId: 'demo-user',
+          userId: DEMO_USER_ID,
           forceSave: false // Change to true to save even duplicates
         }),
       });
@@ -238,15 +252,17 @@ function OriginalDemoPage() {
         // Trigger memory panel refresh by updating key
         setMemoryRefreshKey(prev => prev + 1);
       } else {
-        throw new Error('Failed to extract memories');
+        const errorData = await response.json();
+        console.error('Memory extraction failed:', errorData);
+        throw new Error(errorData.details || 'Failed to extract memories');
       }
     } catch (error) {
       console.error('Auto-save failed:', error);
       const indicator = document.createElement('div');
       indicator.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg';
-      indicator.textContent = '메모리 저장 실패';
+      indicator.textContent = `메모리 저장 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`;
       document.body.appendChild(indicator);
-      setTimeout(() => indicator.remove(), 2000);
+      setTimeout(() => indicator.remove(), 3000);
     } finally {
       setIsSavingMemory(false);
     }
@@ -477,7 +493,7 @@ function OriginalDemoPage() {
             {/* Memory Tab */}
             <TabsContent value="memory" className="p-4">
               <div className="space-y-3">
-                <MemoryPanel userId="demo-user" className="border-0 p-0" refreshKey={memoryRefreshKey} />
+                <MemoryPanel userId={DEMO_USER_ID} className="border-0 p-0" refreshKey={memoryRefreshKey} />
               </div>
             </TabsContent>
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { chat, message } from '@/lib/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 
 // GET - 대화 목록 조회
 export async function GET(request: NextRequest) {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     const conversations = await (db as any)
       .select()
       .from(chat)
-      .where(eq(chat.userId, 'demo-user'))
+      .where(eq(chat.userId, DEMO_USER_ID))
       .orderBy(desc(chat.createdAt))
       .limit(20);
 
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     // 대화 생성
     await (db as any).insert(chat).values({
       id: conversationId,
-      userId: 'demo-user',
+      userId: DEMO_USER_ID,
       title: title || '새 대화',
       createdAt: now,
     });

@@ -31,6 +31,9 @@ function createDbConnection(): DbClient {
     const client = postgres(dbUrl, {
       prepare: false, // Required for Supabase pooler
       ssl: 'require',
+      connection: {
+        client_encoding: 'UTF8',
+      },
     });
     
     return drizzle(client, { schema });

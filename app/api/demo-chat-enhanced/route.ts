@@ -1,6 +1,7 @@
 // Enhanced Friendli AI integration with memory and web search
 import { getBraveSearchClient } from '@/lib/ai/brave-search';
 import { MemoryManager } from '@/lib/ai/memory-manager';
+import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 
 const FRIENDLI_API_KEY = 'flp_ZMMUt1CuH2dy0RLXxnbjwsfiZufsVqRu6w6ko2d3mrHc4';
 const FRIENDLI_BASE_URL = 'https://api.friendli.ai/dedicated/v1/chat/completions';
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const { 
       message, 
       webSearchEnabled = false,
-      userId = 'demo-user',
+      userId = DEMO_USER_ID,
       sessionId,
       includeMemories = false
     } = json;
