@@ -11,14 +11,22 @@ import { DEFAULT_MODEL_ID } from '@/lib/ai/models-config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Brain, Clock, Settings, Upload, MessageSquare, RotateCw } from 'lucide-react';
+import { Brain, Clock, Settings, Upload, MessageSquare, RotateCw, LogIn, UserCircle } from 'lucide-react';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import Link from 'next/link';
 
 
-export default function DemoPage() {
+export default function MainPage() {
+  const { data: session, status } = useSession();
+  const isLoading = status === 'loading';
+  const isLoggedIn = !!session?.user && session.user.type === 'regular';
+  const isGuest = session?.user?.type === 'guest';
+  const userId = session?.user?.id;
+  
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ filename: string; processedContent: string }>>([]);
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
@@ -40,14 +48,17 @@ export default function DemoPage() {
     }
   };
 
-  // Initialize session
+  // Initialize session based on auth status
   useEffect(() => {
     const initSession = () => {
-      const newSessionId = `demo-session-${Date.now()}`;
+      const sessionPrefix = isLoggedIn ? 'user' : isGuest ? 'guest' : 'demo';
+      const newSessionId = `${sessionPrefix}-session-${Date.now()}`;
       setSessionId(newSessionId);
-      console.log('Session initialized:', newSessionId);
+      console.log('Session initialized:', newSessionId, 'User type:', session?.user?.type || 'anonymous');
     };
-    initSession();
+    if (status !== 'loading') {
+      initSession();
+    }
 
     // Load user name from localStorage
     const savedUserName = localStorage.getItem('userName');
@@ -97,12 +108,12 @@ export default function DemoPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isChatLoading) return;
 
     const userMessage = input;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setIsLoading(true);
+    setIsChatLoading(true);
     
     // Scroll to bottom when user sends a message
     setTimeout(() => {
@@ -134,9 +145,9 @@ export default function DemoPage() {
             content: messageWithContext,
           },
           webSearchEnabled,
-          userId: DEMO_USER_ID,
+          userId: userId,
           sessionId,
-          includeMemories: selfLearningEnabled,
+          includeMemories: selfLearningEnabled && isLoggedIn,
         }),
       });
 
@@ -203,7 +214,7 @@ export default function DemoPage() {
         content: '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다.' 
       }]);
     } finally {
-      setIsLoading(false);
+      setIsChatLoading(false);
     }
   };
 
@@ -233,7 +244,7 @@ export default function DemoPage() {
         body: JSON.stringify({
           messages: messages,
           sessionId: sessionId,
-          userId: DEMO_USER_ID,
+          userId: userId,
           forceSave: false // Change to true to save even duplicates
         }),
       });
@@ -277,7 +288,7 @@ export default function DemoPage() {
 
   const handleNewSession = async () => {
     // Save current conversation before starting new session
-    if (messages.length > 0 && !loadedConversationId) {
+    if (messages.length > 0 && !loadedConversationId && isLoggedIn) {
       await saveConversation();
     }
     
@@ -285,13 +296,20 @@ export default function DemoPage() {
     setUploadedFiles([]);
     setIsViewingHistory(false);
     setLoadedConversationId(null);
-    const newSessionId = `demo-session-${Date.now()}`;
+    const sessionPrefix = isLoggedIn ? 'user' : isGuest ? 'guest' : 'demo';
+    const newSessionId = `${sessionPrefix}-session-${Date.now()}`;
     setSessionId(newSessionId);
     console.log('New session started:', newSessionId);
   };
 
   const saveConversation = async () => {
     if (messages.length === 0) return;
+    
+    // Only save conversations for logged-in users
+    if (!isLoggedIn) {
+      console.log('Skipping conversation save for non-logged-in user');
+      return;
+    }
 
     try {
       // AI로 제목 생성
@@ -324,6 +342,12 @@ export default function DemoPage() {
 
   const updateConversation = async (conversationId: string) => {
     if (messages.length === 0) return;
+    
+    // Only update conversations for logged-in users
+    if (!isLoggedIn) {
+      console.log('Skipping conversation update for non-logged-in user');
+      return;
+    }
 
     try {
       const response = await fetch(`/api/demo/conversations/${conversationId}`, {
@@ -386,12 +410,49 @@ export default function DemoPage() {
     return userMessages || '새 대화';
   };
 
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-background">
       {/* Enhanced Sidebar like AGI Space */}
       <div className="w-80 border-r flex flex-col bg-card">
-        {/* Header with Time */}
-        <div className="p-4 border-b">
+        {/* Header with User Info */}
+        <div className="p-4 border-b space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                {isLoggedIn ? session?.user?.email : isGuest ? 'Guest User' : 'Demo Mode'}
+              </span>
+            </div>
+            {!isLoggedIn && (
+              <Link href="/login">
+                <Button variant="outline" size="sm">
+                  <LogIn className="h-3 w-3 mr-1" />
+                  Login
+                </Button>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => signOut()}
+              >
+                Logout
+              </Button>
+            )}
+          </div>
           <div className="text-xs text-muted-foreground">
             현재 시간 (KST): {currentTime ? formatKSTTime(currentTime) : 'Loading...'}
           </div>
@@ -403,10 +464,18 @@ export default function DemoPage() {
             <TabsTrigger value="settings" className="text-xs">
               <Settings className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="memory" className="text-xs">
+            <TabsTrigger 
+              value="memory" 
+              className="text-xs"
+              disabled={!isLoggedIn}
+            >
               <Brain className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="history" className="text-xs">
+            <TabsTrigger 
+              value="history" 
+              className="text-xs"
+              disabled={!isLoggedIn}
+            >
               <Clock className="h-3 w-3" />
             </TabsTrigger>
             <TabsTrigger value="files" className="text-xs">
@@ -452,18 +521,21 @@ export default function DemoPage() {
                   </button>
                 </div>
 
-                {/* Self Learning Toggle */}
+                {/* Self Learning Toggle - Only for logged-in users */}
                 <div className="flex items-center justify-between">
-                  <label className="text-sm">자가 학습</label>
+                  <label className="text-sm">
+                    자가 학습 {!isLoggedIn && <span className="text-xs text-muted-foreground">(로그인 필요)</span>}
+                  </label>
                   <button
-                    onClick={() => setSelfLearningEnabled(!selfLearningEnabled)}
+                    onClick={() => isLoggedIn && setSelfLearningEnabled(!selfLearningEnabled)}
+                    disabled={!isLoggedIn}
                     className={`relative w-10 h-5 rounded-full transition-colors ${
-                      selfLearningEnabled ? 'bg-primary' : 'bg-gray-300'
+                      isLoggedIn ? (selfLearningEnabled ? 'bg-primary' : 'bg-gray-300') : 'bg-gray-200 cursor-not-allowed'
                     }`}
                   >
                     <span
                       className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-                        selfLearningEnabled ? 'translate-x-5' : ''
+                        selfLearningEnabled && isLoggedIn ? 'translate-x-5' : ''
                       }`}
                     />
                   </button>
@@ -493,38 +565,70 @@ export default function DemoPage() {
             {/* Memory Tab */}
             <TabsContent value="memory" className="p-4">
               <div className="space-y-3">
-                <MemoryPanel userId={DEMO_USER_ID} className="border-0 p-0" refreshKey={memoryRefreshKey} />
+                {isLoggedIn ? (
+                  <MemoryPanel userId={userId} className="border-0 p-0" refreshKey={memoryRefreshKey} />
+                ) : (
+                  <div className="text-center py-8">
+                    <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground mb-4">
+                      메모리 기능은 로그인 사용자만 이용할 수 있습니다.
+                    </p>
+                    <Link href="/login">
+                      <Button variant="outline" size="sm">
+                        <LogIn className="h-3 w-3 mr-1" />
+                        로그인하기
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
             {/* History Tab */}
             <TabsContent value="history" className="p-4">
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  대화 기록
-                </h3>
-                <ConversationHistory 
-                  refreshKey={memoryRefreshKey}
-                  onSelectConversation={(conversation) => {
-                    console.log('Selected conversation:', conversation);
-                    setLoadedConversationId(conversation.id);
-                    setIsViewingHistory(false);  // 이어서 대화 가능
-                  }}
-                  onLoadMessages={(loadedMessages) => {
-                    // 로드된 메시지로 현재 대화 교체
-                    setMessages(loadedMessages.map(msg => ({
-                      role: msg.role,
-                      content: msg.content
-                    })));
-                    // 스크롤을 맨 아래로
-                    setTimeout(() => {
-                      if (messagesEndRef.current) {
-                        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }, 100);
-                  }}
-                />
+                {isLoggedIn ? (
+                  <>
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      대화 기록
+                    </h3>
+                    <ConversationHistory 
+                      refreshKey={memoryRefreshKey}
+                      onSelectConversation={(conversation) => {
+                        console.log('Selected conversation:', conversation);
+                        setLoadedConversationId(conversation.id);
+                        setIsViewingHistory(false);  // 이어서 대화 가능
+                      }}
+                      onLoadMessages={(loadedMessages) => {
+                        // 로드된 메시지로 현재 대화 교체
+                        setMessages(loadedMessages.map(msg => ({
+                          role: msg.role,
+                          content: msg.content
+                        })));
+                        // 스크롤을 맨 아래로
+                        setTimeout(() => {
+                          if (messagesEndRef.current) {
+                            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }, 100);
+                      }}
+                    />
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground mb-4">
+                      대화 기록은 로그인 사용자만 이용할 수 있습니다.
+                    </p>
+                    <Link href="/login">
+                      <Button variant="outline" size="sm">
+                        <LogIn className="h-3 w-3 mr-1" />
+                        로그인하기
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -615,7 +719,7 @@ export default function DemoPage() {
                   웹 검색 ON
                 </span>
               )}
-              {selfLearningEnabled && (
+              {selfLearningEnabled && isLoggedIn && (
                 <span className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded">
                   자가 학습 ON
                 </span>

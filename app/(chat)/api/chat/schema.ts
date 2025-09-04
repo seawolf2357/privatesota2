@@ -18,7 +18,7 @@ const filePartSchema = z.object({
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   ]),
   name: z.string().min(1).max(100),
-  url: z.string().url().optional(),
+  url: z.string().url().default(''), // Always provide a URL, even if empty
   data: z.string().optional(), // Base64 encoded data for multimodal
   content: z.string().optional(), // Extracted text content
 });

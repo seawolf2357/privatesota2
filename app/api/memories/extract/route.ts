@@ -100,7 +100,7 @@ ${conversationText}`;
     } catch (aiError) {
       console.log('[Memory Extract API] AI failed, using simple extraction');
       // Simple rule-based extraction as fallback
-      const extractedMemories = [];
+      const extractedMemories: any[] = [];
       
       // Extract user message from conversationMessages
       const userMessages = conversationMessages.filter((m: any) => m.role === 'user').map((m: any) => m.content);

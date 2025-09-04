@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { chat, message } from '@/lib/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
+import { auth } from '@/app/(auth)/auth';
 
 // GET - 대화 목록 조회
 export async function GET(request: NextRequest) {
@@ -12,10 +13,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
+    // Get authenticated user
+    const session = await auth();
+    const userId = session?.user?.id || DEMO_USER_ID;
+    
+    // Only fetch conversations for the current user
     const conversations = await (db as any)
       .select()
       .from(chat)
-      .where(eq(chat.userId, DEMO_USER_ID))
+      .where(eq(chat.userId, userId))
       .orderBy(desc(chat.createdAt))
       .limit(20);
 
@@ -34,6 +40,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
+    // Get authenticated user
+    const session = await auth();
+    const userId = session?.user?.id;
+    
+    // Only allow logged-in users to save conversations
+    if (!userId || session?.user?.type !== 'regular') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { title, sessionId, messages: chatMessages } = body;
 
@@ -43,7 +58,7 @@ export async function POST(request: NextRequest) {
     // 대화 생성
     await (db as any).insert(chat).values({
       id: conversationId,
-      userId: DEMO_USER_ID,
+      userId,
       title: title || '새 대화',
       createdAt: now,
     });

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useRef } from 'react';
 import { toast } from '@/components/toast';
 
 import { AuthForm } from '@/components/auth-form';
@@ -11,11 +11,14 @@ import { SubmitButton } from '@/components/submit-button';
 import { login, type LoginActionState } from '../actions';
 import { useSession } from 'next-auth/react';
 
+export const dynamic = 'force-dynamic';
+
 export default function Page() {
   const router = useRouter();
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const hasHandledSuccess = useRef(false);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -37,12 +40,17 @@ export default function Page() {
         type: 'error',
         description: 'Failed validating your submission!',
       });
-    } else if (state.status === 'success') {
+    } else if (state.status === 'success' && !hasHandledSuccess.current) {
+      hasHandledSuccess.current = true;
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      toast({ type: 'success', description: 'Logged in successfully!' });
+      
+      // Update session and redirect immediately
+      updateSession().then(() => {
+        router.push('/');
+      });
     }
-  }, [state.status]);
+  }, [state.status, router, updateSession]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get('email') as string);

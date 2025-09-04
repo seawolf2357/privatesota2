@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { chat, message } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
+import { auth } from '@/app/(auth)/auth';
 
 // GET - 특정 대화의 메시지 가져오기
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const isDemoMode = request.headers.get('x-demo-mode') === 'true';
@@ -14,7 +15,24 @@ export async function GET(
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
-    const { id: conversationId } = params;
+    const { id: conversationId } = await params;
+    
+    // Get authenticated user and check ownership
+    const session = await auth();
+    const userId = session?.user?.id;
+    
+    if (userId) {
+      // Verify the conversation belongs to the current user
+      const conversation = await (db as any)
+        .select()
+        .from(chat)
+        .where(and(eq(chat.id, conversationId), eq(chat.userId, userId)))
+        .limit(1);
+      
+      if (conversation.length === 0) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+    }
     
     console.log('[GET Conversation] Fetching messages for conversation:', conversationId);
 
@@ -94,7 +112,7 @@ export async function GET(
 // PUT - 대화 업데이트 (메시지 추가)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const isDemoMode = request.headers.get('x-demo-mode') === 'true';
@@ -102,7 +120,28 @@ export async function PUT(
       return NextResponse.json({ error: 'Demo mode only' }, { status: 403 });
     }
 
-    const { id: conversationId } = params;
+    // Get authenticated user
+    const session = await auth();
+    const userId = session?.user?.id;
+    
+    // Only allow logged-in users to update conversations
+    if (!userId || session?.user?.type !== 'regular') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { id: conversationId } = await params;
+    
+    // Verify the conversation belongs to the current user
+    const conversation = await (db as any)
+      .select()
+      .from(chat)
+      .where(and(eq(chat.id, conversationId), eq(chat.userId, userId)))
+      .limit(1);
+    
+    if (conversation.length === 0) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+    
     const body = await request.json();
     const { messages: chatMessages } = body;
 

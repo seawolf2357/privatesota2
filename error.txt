@@ -1,73 +1,54 @@
 react-dom-client.development.js:28936 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-page.tsx:48 Session initialized: demo-session-1756959144376
-scheduler.development.js:13 [Violation] 'message' handler took 154ms
 report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 102ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 193ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 410ms
-conversation-history.tsx:42 [ConversationHistory] Fetched conversations: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+report-hmr-latency.ts:26 [Fast Refresh] done in 111ms
+:3006/login:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input class=​"flex h-10 w-full rounded-md border border-input px-3 py-2 ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50 bg-muted text-md md:​text-sm" id=​"password" required type=​"password" name=​"password">​flex
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-memory-panel.tsx:80 [MemoryPanel] Fetched memories: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-memory-panel.tsx:81 [MemoryPanel] First memory date check: {raw: '2025-09-04T04:06:26.993Z', parsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시), isValid: true}
-conversation-history.tsx:42 [ConversationHistory] Fetched conversations: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-memory-panel.tsx:80 [MemoryPanel] Fetched memories: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-memory-panel.tsx:81 [MemoryPanel] First memory date check: {raw: '2025-09-04T04:06:26.993Z', parsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시), isValid: true}
-report-hmr-latency.ts:26 [Fast Refresh] done in 246ms
-page.tsx:510 Selected conversation: {id: 'd5a1ea4f-0c14-4e25-8adb-bb67f2b1d79a', createdAt: '2025-09-04T03:52:33.469Z', title: '파일 분석 결과', userId: '00000000-0000-0000-0000-000000000001', visibility: 'private'}
+report-hmr-latency.ts:26 [Fast Refresh] done in 184ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 179ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 113ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
+[Violation] 'setTimeout' handler took <N>ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 150ms
-page.tsx:341 Conversation updated successfully
-conversation-history.tsx:42 [ConversationHistory] Fetched conversations: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+report-hmr-latency.ts:26 [Fast Refresh] done in 145ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 324ms
+report-hmr-latency.ts:26 [Fast Refresh] done in 120ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 171ms
-page.tsx:341 Conversation updated successfully
-conversation-history.tsx:42 [ConversationHistory] Fetched conversations: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-page.tsx:213 Auto-saving memories...
-page.tsx:243 Memories extracted: {success: true, count: 0, extracted: 2}
-conversation-history.tsx:42 [ConversationHistory] Fetched conversations: (13) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-content.js:27 Error translating word: Error: Could not establish connection. Receiving end does not exist.
-translate @ content.js:27
-await in translate
-B @ content.js:27
-A @ content.js:27
-(anonymous) @ content.js:27
-y @ content.js:10
-F @ content.js:10
-W @ content.js:10
-setTimeout
-ge @ content.js:10
-T @ content.js:10
-wn @ content.js:10
-(anonymous) @ content.js:27
-memory-panel.tsx:80 [MemoryPanel] Fetched memories: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-memory-panel.tsx:81 [MemoryPanel] First memory date check: {raw: '2025-09-04T04:06:26.993Z', parsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시), isValid: true}
-memory-panel.tsx:80 [MemoryPanel] Fetched memories: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-memory-panel.tsx:81 [MemoryPanel] First memory date check: {raw: '2025-09-04T04:06:26.993Z', parsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시), isValid: true}isValid: trueparsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시)[[Prototype]]: Objectraw: "2025-09-04T04:06:26.993Z"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+report-hmr-latency.ts:26 [Fast Refresh] done in 132ms
 turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 238ms
-content.js:27 Error translating word: Error: Could not establish connection. Receiving end does not exist.
-translate @ content.js:27
-await in translate
-B @ content.js:27
-A @ content.js:27
-(anonymous) @ content.js:27
-y @ content.js:10
-F @ content.js:10
-W @ content.js:10
-setTimeout
-ge @ content.js:10
-T @ content.js:10
-wn @ content.js:10
-(anonymous) @ content.js:27
-page.tsx:341 Conversation updated successfully
-memory-panel.tsx:80 [MemoryPanel] Fetched memories: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-memory-panel.tsx:81 [MemoryPanel] First memory date check: {raw: '2025-09-04T04:06:26.993Z', parsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시), isValid: true}isValid: trueparsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시) {}raw: "2025-09-04T04:06:26.993Z"[[Prototype]]: Object
-page.tsx:213 Auto-saving memories...
-page.tsx:243 Memories extracted: {success: true, count: 0, extracted: 2}count: 0extracted: 2success: true[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
-memory-panel.tsx:80 [MemoryPanel] Fetched memories: (12) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]0: {id: '888ad82a-b93f-4efd-8bd6-1f8e7a02c462', userId: '00000000-0000-0000-0000-000000000001', category: 'notes', content: '대화 내용: 안녕하세요! jetXA입니다. 컨퍼런스 구법모 교수 수정.png 파일을 업로드…지 분석 결과, 다음과 같은 내용을 확인했습니다.\n\n이미지는 컨퍼런스 발표 자료의 일부로', confidence: 0.5, …}1: {id: '72756325-507f-4309-bf4a-f8960d51dabf', userId: '00000000-0000-0000-0000-000000000001', category: 'general', content: '사용자가 "첨부파일 확인"라고 말했음', confidence: 0.8, …}2: {id: '25e30340-526f-4526-8771-7aea365d43eb', userId: '00000000-0000-0000-0000-000000000001', category: 'notes', content: '대화 내용: 안녕하세요! jetXA입니다. VIDraft K-AI.pdf 파일을 분석한 결…은 정보들을 얻었습니다.\n\n**주요 내용:**\n\n*   **K-AI의 글로벌 도약:** ', confidence: 0.5, …}3: {id: '9f0fbab0-484f-4f8b-b51c-93880a5a08da', userId: '00000000-0000-0000-0000-000000000001', category: 'general', content: '사용자가 "첨부 파일 분석"라고 말했음', confidence: 0.8, …}4: {id: '3d7319fb-c585-4493-93cd-3c26d655298e', userId: '00000000-0000-0000-0000-000000000001', category: 'notes', content: '대화 내용: 안녕하세요! jetXA입니다. 오늘 무슨 날인지 궁금하시군요.\n\n오늘, 202…은 목요일입니다. 대한민국에는 다양한 기념일들이 있지만, 특별히 오늘이 어떤 기념일인지는', confidence: 0.5, …}5: {id: '4276cbe5-bd1c-4369-85a4-335e28f0ccd3', userId: '00000000-0000-0000-0000-000000000001', category: 'general', content: '사용자가 "오늘 무슨날"라고 말했음', confidence: 0.8, …}6: {id: 'e6e050d6-6ebe-4bac-978e-79f945ec0343', userId: '00000000-0000-0000-0000-000000000001', category: 'notes', content: '대화 내용: 안녕하세요! jetXA입니다. "대한민국"에 대해 질문하셨네요. \n\n대한민국은…반도 남부에 위치한 민주공화국입니다. 공식 명칭은 "대한민국"이며, 줄여서 "대한" 또는', confidence: 0.5, …}7: {id: '9d4d9d58-2e59-4144-b4f3-51f06d85cb70', userId: '00000000-0000-0000-0000-000000000001', category: 'general', content: '사용자가 "대한민국 ?"라고 말했음', confidence: 0.8, …}8: {id: '7bf07174-0bef-4fee-bd34-afa63367f0eb', userId: '00000000-0000-0000-0000-000000000001', category: 'notes', content: '대화 내용: 안녕하세요! jetXA입니다. 오늘 하루도 즐거우셨나요? 노래 듣기를 좋아하시…오늘 어떤 노래를 듣고 싶으신가요?\n\n"안녕"에 대해 물어보셨네요. "안녕"은 한국어에서', confidence: 0.5, …}9: {id: 'f719e01f-3ce4-4079-9f5a-f9968023f84a', userId: '00000000-0000-0000-0000-000000000001', category: 'general', content: '사용자가 "안녕"라고 말했음', confidence: 0.8, …}10: {id: '4ef8f375-e9fc-49a5-8eee-1cbf3eda700c', userId: '00000000-0000-0000-0000-000000000001', category: 'important_dates', content: '현재 날짜: 2025년 9월 3일', confidence: 1, …}11: {id: '45e92a15-cf31-4709-8550-35275f234ad9', userId: '00000000-0000-0000-0000-000000000001', category: 'preferences', content: '사용자는 노래 듣기를 선호함', confidence: 0.8, …}length: 12[[Prototype]]: Array(0)
-memory-panel.tsx:81 [MemoryPanel] First memory date check: {raw: '2025-09-04T04:06:26.993Z', parsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시), isValid: true}isValid: trueparsed: Thu Sep 04 2025 13:06:26 GMT+0900 (한국 표준시)[[Prototype]]: Objectraw: "2025-09-04T04:06:26.993Z"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+report-hmr-latency.ts:26 [Fast Refresh] done in 153ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+[Violation] Forced reflow while executing JavaScript took <N>ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 155ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 169ms
+turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
+report-hmr-latency.ts:26 [Fast Refresh] done in 227ms
