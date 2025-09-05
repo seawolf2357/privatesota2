@@ -7,6 +7,7 @@ import { YuriBadge } from '@/components/yuri-badge';
 import { ModelSelector } from '@/components/model-selector';
 import { MemoryPanel } from '@/components/memory-panel';
 import { ConversationHistory } from '@/components/conversation-history';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { DEFAULT_MODEL_ID } from '@/lib/ai/models-config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -541,6 +542,9 @@ export default function MainPage() {
                     />
                   </button>
                 </div>
+
+                {/* Theme Toggle */}
+                <ThemeToggle />
 
                 {/* Model Selector */}
                 <div>
