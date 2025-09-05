@@ -133,28 +133,71 @@ export class BraveSearchClient {
 
   // Generate multiple search queries from user input (Korean optimized)
   generateSearchQueries(message: string): string[] {
-    const queries = [message];
-
-    // Remove question marks for better search
-    if (message.includes('?')) {
-      queries.push(message.replace(/\?/g, ''));
-    }
-
-    // Extract Korean keywords
-    const koreanRegex = /[\uAC00-\uD7AF]+/g;
-    const koreanWords = message.match(koreanRegex);
+    const queries: string[] = [];
     
-    if (koreanWords && koreanWords.length > 2) {
-      // Add last 3 Korean words as a query
-      queries.push(koreanWords.slice(-3).join(' '));
-    }
+    // If message is too long (likely contains file content), extract key terms only
+    if (message.length > 500) {
+      console.log('[BraveSearch] Message too long, extracting key terms only');
+      
+      // Look for file patterns first
+      if (message.includes('[Uploaded File:')) {
+        const userQuestionMatch = message.match(/사용자 질문: (.+)$/);
+        if (userQuestionMatch) {
+          const userQuestion = userQuestionMatch[1].trim();
+          queries.push(userQuestion);
+          if (userQuestion.includes('?')) {
+            queries.push(userQuestion.replace(/\?/g, ''));
+          }
+        }
+      }
+      
+      // Extract Korean keywords (max 20 words)
+      const koreanRegex = /[\uAC00-\uD7AF]+/g;
+      const koreanWords = message.match(koreanRegex);
+      if (koreanWords && koreanWords.length > 0) {
+        // Take first 10 and last 10 Korean words
+        const keyWords = [
+          ...koreanWords.slice(0, 10),
+          ...koreanWords.slice(-10)
+        ];
+        queries.push(keyWords.join(' '));
+      }
+      
+      // Extract English keywords (max 20 words)
+      const englishRegex = /[A-Za-z]+/g;
+      const englishWords = message.match(englishRegex);
+      if (englishWords && englishWords.length > 0) {
+        const keyWords = [
+          ...englishWords.slice(0, 10),
+          ...englishWords.slice(-10)
+        ];
+        queries.push(keyWords.join(' '));
+      }
+    } else {
+      // For normal messages, use existing logic
+      queries.push(message);
 
-    // Extract English keywords
-    const englishRegex = /[A-Za-z]+/g;
-    const englishWords = message.match(englishRegex);
-    
-    if (englishWords && englishWords.length > 2) {
-      queries.push(englishWords.slice(-3).join(' '));
+      // Remove question marks for better search
+      if (message.includes('?')) {
+        queries.push(message.replace(/\?/g, ''));
+      }
+
+      // Extract Korean keywords
+      const koreanRegex = /[\uAC00-\uD7AF]+/g;
+      const koreanWords = message.match(koreanRegex);
+      
+      if (koreanWords && koreanWords.length > 2) {
+        // Add last 3 Korean words as a query
+        queries.push(koreanWords.slice(-3).join(' '));
+      }
+
+      // Extract English keywords
+      const englishRegex = /[A-Za-z]+/g;
+      const englishWords = message.match(englishRegex);
+      
+      if (englishWords && englishWords.length > 2) {
+        queries.push(englishWords.slice(-3).join(' '));
+      }
     }
 
     return [...new Set(queries)]; // Remove duplicates

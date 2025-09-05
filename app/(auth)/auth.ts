@@ -1,9 +1,7 @@
-import { compare } from 'bcrypt-ts';
 import NextAuth, { type DefaultSession } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
 import { createGuestUser, getUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
-import { DUMMY_PASSWORD } from '@/lib/constants';
 import type { DefaultJWT } from 'next-auth/jwt';
 
 export type UserType = 'guest' | 'regular';
@@ -38,44 +36,56 @@ export const {
 } = NextAuth({
   ...authConfig,
   providers: [
-    Credentials({
-      credentials: {},
-      async authorize({ email, password }: any) {
-        const users = await getUser(email);
-
-        if (users.length === 0) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
-
-        const [user] = users;
-
-        if (!user.password) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
-
-        const passwordsMatch = await compare(password, user.password);
-
-        if (!passwordsMatch) return null;
-
-        return { ...user, type: 'regular' };
-      },
-    }),
-    Credentials({
-      id: 'guest',
-      credentials: {},
-      async authorize() {
-        const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: 'guest' };
-      },
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      // For Google OAuth provider, create user if doesn't exist
+      if (account?.provider === 'google') {
+        try {
+          const { createUser, getUser } = await import('@/lib/db/queries');
+          const email = user.email!;
+          
+          // Check if user already exists
+          const existingUsers = await getUser(email);
+          
+          if (existingUsers.length === 0) {
+            // Create new OAuth user without password
+            await createUser(email, null);
+            console.log(`Created new Google OAuth user: ${email}`);
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error creating Google OAuth user:', error);
+          return false;
+        }
+      }
+      
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
+        // For Google OAuth users, get user from database
+        if (account?.provider === 'google') {
+          try {
+            const { getUser } = await import('@/lib/db/queries');
+            const existingUsers = await getUser(user.email!);
+            
+            if (existingUsers.length > 0) {
+              token.id = existingUsers[0].id;
+              token.type = 'regular';
+            }
+          } catch (error) {
+            console.error('Error getting Google OAuth user:', error);
+          }
+        } else {
+          token.id = user.id as string;
+          token.type = user.type;
+        }
       }
 
       return token;

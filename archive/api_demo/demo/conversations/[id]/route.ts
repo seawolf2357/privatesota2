@@ -174,7 +174,7 @@ export async function PUT(
           .map((m: any) => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content.slice(0, 100)}`)
           .join('\n');
 
-        const titleResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/demo/generate-title`, {
+        const titleResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3006'}/api/demo/generate-title`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

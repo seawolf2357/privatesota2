@@ -55,62 +55,8 @@ export async function POST(request: Request) {
 - 한국 표준시(KST): ${kstString}
 `;
 
-    // Advanced language detection function
-    function detectLanguage(text: string): string {
-      // Korean (Hangul)
-      if (/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text)) return 'ko';
-      
-      // Japanese (Hiragana, Katakana, Kanji)
-      if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'ja';
-      
-      // Chinese (CJK Unified Ideographs) - but exclude if already detected as Japanese/Korean
-      if (/[\u4E00-\u9FFF]/.test(text) && !/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'zh';
-      
-      // Russian (Cyrillic)
-      if (/[\u0400-\u04FF]/.test(text)) return 'ru';
-      
-      // Arabic
-      if (/[\u0600-\u06FF]/.test(text)) return 'ar';
-      
-      // Thai
-      if (/[\u0E00-\u0E7F]/.test(text)) return 'th';
-      
-      // Vietnamese (has diacritics)
-      if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/.test(text)) return 'vi';
-      
-      // Spanish (ñ and common accents)
-      if (/[ñáéíóúü]/.test(text.toLowerCase())) return 'es';
-      
-      // French (common accents)
-      if (/[àâäéèêëîïôöùûüÿç]/.test(text.toLowerCase())) return 'fr';
-      
-      // German (umlauts and ß)
-      if (/[äöüß]/.test(text.toLowerCase())) return 'de';
-      
-      // Italian (common accents)
-      if (/[àèéìíîòóù]/.test(text.toLowerCase())) return 'it';
-      
-      // Portuguese (ã, õ, ç)
-      if (/[ãõçáàâéêíóôúü]/.test(text.toLowerCase())) return 'pt';
-      
-      // Default to English if Latin alphabet
-      if (/[a-zA-Z]/.test(text)) return 'en';
-      
-      // Fallback to Korean for unknown scripts
-      return 'ko';
-    }
-    
-    // Detect input language
-    const detectedLanguage = detectLanguage(message.content);
-    const isEnglish = detectedLanguage === 'en';
-    
-    // Debug: Log detected language
-    console.log(`[Language Detection] Input: "${message.content.substring(0, 50)}" → Detected: ${detectedLanguage}`);
-    
-    // Generate system prompt based on detected language
-    function getSystemPrompt(language: string): string {
-      const basePrompt = {
-        ko: `당신의 이름은 jetXA입니다. 전 세계 언어를 유창하게 구사하는 고급 AI 어시스턴트입니다.
+    // Base system prompt
+    let systemPrompt = `당신의 이름은 jetXA입니다. 한국어와 영어를 유창하게 구사하는 고급 AI 어시스턴트입니다.
 
 ${timeInfo}
 
@@ -124,67 +70,14 @@ ${timeInfo}
 1. 업로드된 이미지를 분석하고 설명할 수 있음
 2. PDF, CSV, TXT 등 다양한 파일 형식 처리
 3. 파일 내용을 기반으로 질문에 답변
-4. 모든 언어로 자연스러운 대화
+4. 한국어와 영어를 자유롭게 전환하며 대화
 5. 웹 검색을 통한 최신 정보 제공
 6. 사용자 정보 기억 및 개인화된 대화
-
-중요한 언어 규칙:
-- 핵심: 항상 사용자 입력과 동일한 언어로 응답하세요
-- 사용자의 언어를 감지하고 그 언어로만 응답
-- 전체 응답에서 일관된 언어를 유지하세요
 
 중요: 
 - 사용자가 파일을 업로드했다면, 파일 내용을 인지하고 관련 질문에 답변하세요.
 - 웹 검색 결과를 사용할 때는 반드시 [출처: 번호] 형식으로 출처를 명시하세요.
-- 기억된 정보를 활용하여 더 개인화된 답변을 제공하세요.`,
-
-        en: `Your name is jetXA. You are an advanced multilingual AI assistant fluent in all world languages.
-
-${timeInfo}
-
-Key Features:
-- Name: jetXA
-- Role: Advanced multimodal AI assistant
-- Personality: Professional, accurate, and friendly conversational style
-- Specialties: Image analysis, document processing, data analysis, multilingual conversation, web search, memory management
-
-Functions:
-1. Analyze and describe uploaded images
-2. Process various file formats including PDF, CSV, TXT
-3. Answer questions based on file content
-4. Natural conversation in any language
-5. Provide latest information through web search
-6. Remember user information for personalized conversations
-
-Important Language Rules:
-- CRITICAL: Always respond in the SAME LANGUAGE as the user's input
-- Detect the user's language and respond ONLY in that language
-- Maintain consistent language throughout your entire response
-
-Important:
-- If user uploaded files, acknowledge the file content and answer related questions.
-- When using web search results, always cite sources in [Source: number] format.
-- Use remembered information to provide more personalized responses.`,
-
-        default: `Your name is jetXA. You are an advanced multilingual AI assistant.
-
-${timeInfo}
-
-CRITICAL: Always respond in the SAME LANGUAGE as the user's input. Detect their language and maintain it throughout your response.
-
-Key abilities: Image analysis, document processing, multilingual conversation, web search, memory management.
-
-Important:
-- Respond in the user's language
-- Cite web sources as [Source: number]
-- Use remembered information for personalization`
-      };
-
-      return basePrompt[language as keyof typeof basePrompt] || basePrompt.default;
-    }
-
-    // Base system prompt with language detection  
-    let systemPrompt = getSystemPrompt(detectedLanguage === 'en' ? 'en' : detectedLanguage === 'ko' ? 'ko' : 'default');
+- 기억된 정보를 활용하여 더 개인화된 답변을 제공하세요.`;
 
     // Add memories if enabled
     if (includeMemories && userId) {
@@ -210,21 +103,10 @@ Important:
         const queries = searchClient.generateSearchQueries(message.content);
         console.log('[WebSearch] Generated queries:', queries);
         
-        // Map detected language to search language
-        function getSearchLanguage(detectedLang: string): string {
-          const langMap = {
-            'ko': 'ko', 'ja': 'ja', 'zh': 'zh-cn', 'ru': 'ru',
-            'ar': 'ar', 'es': 'es', 'fr': 'fr', 'de': 'de', 
-            'it': 'it', 'pt': 'pt', 'th': 'th', 'vi': 'vi',
-            'en': 'en'
-          };
-          return langMap[detectedLang as keyof typeof langMap] || 'en';
-        }
-        
-        // Perform multi-search with detected language
+        // Perform multi-search
         const results = await searchClient.multiSearch(queries, {
           count: 10,
-          lang: getSearchLanguage(detectedLanguage)
+          lang: 'ko'
         });
 
         if (results.length > 0) {

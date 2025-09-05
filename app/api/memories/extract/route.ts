@@ -6,14 +6,17 @@ import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    const isDemoMode = request.headers.get('x-demo-mode') === 'true';
     
-    if (!isDemoMode && !session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Only allow logged-in users to extract memories
+    if (!session?.user?.id || session?.user?.type !== 'regular') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { messages: conversationMessages, sessionId, userId, forceSave = false } = body;
+    const { messages: conversationMessages, sessionId, forceSave = false } = body;
+    
+    // Always use the authenticated user's ID
+    const userId = session.user.id;
     
     if (!conversationMessages || conversationMessages.length < 2) {
       return NextResponse.json({ 
@@ -217,13 +220,12 @@ ${conversationText}`;
       const { userMemory } = await import('@/lib/db/schema');
       const { eq, and } = await import('drizzle-orm');
       
-      const actualUserId = userId || session?.user?.id || DEMO_USER_ID;
-      console.log('[Memory Extract API] Actual User ID for saving:', actualUserId);
+      console.log('[Memory Extract API] User ID for saving:', userId);
       let savedCount = 0;
 
       for (const memory of extractedMemories) {
         console.log(`[Memory Extract API] Processing memory: ${memory.category} - ${memory.content}`);
-        console.log(`[Memory Extract API] Checking for duplicates with userId: ${actualUserId}`);
+        console.log(`[Memory Extract API] Checking for duplicates with userId: ${userId}`);
         
         try {
           // Check if similar memory exists (relaxed duplicate check)
@@ -233,7 +235,7 @@ ${conversationText}`;
             .from(userMemory)
             .where(
               and(
-                eq(userMemory.userId, actualUserId),
+                eq(userMemory.userId, userId),
                 eq(userMemory.category, memory.category),
                 eq(userMemory.content, memory.content)
               )
@@ -257,14 +259,14 @@ ${conversationText}`;
             
             // Insert new memory with explicit ID and timestamps
             // sourceSessionId should be a conversation ID (UUID), not session ID
-            // If sessionId starts with 'demo-session-', it's not a valid UUID
-            const sourceId = sessionId && sessionId.startsWith('demo-session-') 
-              ? null 
-              : sessionId;
+            // If sessionId starts with 'demo-session-' or is empty/null, set to null
+            const sourceId = (sessionId && sessionId.trim() && !sessionId.startsWith('demo-session-')) 
+              ? sessionId 
+              : null;
             
             await (db as any).insert(userMemory).values({
               id: memoryId,
-              userId: actualUserId,
+              userId: userId,
               category: memory.category,
               content: contentToSave,
               confidence: memory.confidence || 1.0,

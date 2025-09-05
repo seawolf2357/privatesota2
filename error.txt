@@ -1,54 +1,30 @@
-react-dom-client.development.js:28936 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+:3000/:1  GET http://localhost:3000/ 500 (Internal Server Error)
+react-dom-client.development.js:24514 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+node-stack-frames.ts:31 Uncaught Error: An unexpected Turbopack error occurred. Please see the output of `next dev` for more details.
+    at getServerError (node-stack-frames.ts:31:36)
+    at index.tsx:945:17
+getServerError @ node-stack-frames.ts:31
+(anonymous) @ index.tsx:945
+setTimeout
+hydrate @ index.tsx:923
+await in hydrate
+pageBootstrap @ page-bootstrap.ts:23
+(anonymous) @ next-dev-turbopack.ts:49
+Promise.then
+[project]/node_modules/.pnpm/next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km/node_modules/next/dist/client/next-dev-turbopack.js [client] (ecmascript) @ next-dev-turbopack.ts:28
+(anonymous) @ dev-base.ts:205
+runModuleExecutionHooks @ dev-base.ts:265
+instantiateModule @ dev-base.ts:203
+getOrInstantiateRuntimeModule @ dev-base.ts:101
+registerChunk @ runtime-backend-dom.ts:85
+await in registerChunk
+registerChunk @ runtime-base.ts:328
+(anonymous) @ dev-backend-dom.ts:127
+(anonymous) @ dev-backend-dom.ts:127
+websocket.ts:32 [HMR] connected
 report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 193ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 111ms
-:3006/login:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input class=​"flex h-10 w-full rounded-md border border-input px-3 py-2 ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50 bg-muted text-md md:​text-sm" id=​"password" required type=​"password" name=​"password">​flex
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 184ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 113ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-[Violation] 'setTimeout' handler took <N>ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 145ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 120ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 132ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 153ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-[Violation] Forced reflow while executing JavaScript took <N>ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 155ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 169ms
-turbopack-hot-reloader-common.ts:41 [Fast Refresh] rebuilding
-report-hmr-latency.ts:26 [Fast Refresh] done in 227ms
+report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
+content.js:1 Uncaught (in promise) The message port closed before a response was received.
+(anonymous) @ content.js:1
+content.js:1 Uncaught (in promise) The message port closed before a response was received.
+(anonymous) @ content.js:1
