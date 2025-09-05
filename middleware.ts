@@ -34,18 +34,16 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
+    // Redirect to NextAuth default signin page with callbackUrl
+    const callbackUrl = encodeURIComponent(request.url);
     return NextResponse.redirect(
-      new URL(`/api/auth/signin/google?redirectUrl=${redirectUrl}`, request.url),
+      new URL(`/api/auth/signin?callbackUrl=${callbackUrl}`, request.url),
     );
   }
 
   const isGuest = guestRegex.test(token?.email ?? '');
 
-  if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
+  // Remove redirect logic for /login and /register since they no longer exist
 
   return NextResponse.next();
 }
@@ -55,8 +53,6 @@ export const config = {
     '/',
     '/chat/:id',
     '/api/:path*',
-    '/login',
-    '/register',
     '/demo',
 
     /*

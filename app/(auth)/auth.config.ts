@@ -2,7 +2,8 @@ import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
   pages: {
-    signIn: '/login',
+    // Remove custom signIn page since we only use Google OAuth
+    // signIn: '/login',
     newUser: '/',
   },
   providers: [
