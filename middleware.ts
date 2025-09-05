@@ -33,13 +33,13 @@ export async function middleware(request: NextRequest) {
     secureCookie: !isDevelopmentEnvironment,
   });
 
-  if (!token) {
-    // Redirect to NextAuth default signin page with callbackUrl
-    const callbackUrl = encodeURIComponent(request.url);
-    return NextResponse.redirect(
-      new URL(`/api/auth/signin?callbackUrl=${callbackUrl}`, request.url),
-    );
-  }
+  // Allow guest access - no forced redirect to login
+  // if (!token) {
+  //   const callbackUrl = encodeURIComponent(request.url);
+  //   return NextResponse.redirect(
+  //     new URL(`/api/auth/signin?callbackUrl=${callbackUrl}`, request.url),
+  //   );
+  // }
 
   const isGuest = guestRegex.test(token?.email ?? '');
 

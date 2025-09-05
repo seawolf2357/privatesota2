@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Brain, Clock, Settings, Upload, MessageSquare, RotateCw, LogIn, UserCircle } from 'lucide-react';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import Link from 'next/link';
 
 
 export default function MainPage() {
@@ -436,12 +435,14 @@ export default function MainPage() {
               </span>
             </div>
             {!isLoggedIn && (
-              <Link href="/login">
-                <Button variant="outline" size="sm">
-                  <LogIn className="h-3 w-3 mr-1" />
-                  Login
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => signIn('google')}
+              >
+                <LogIn className="h-3 w-3 mr-1" />
+                Google 로그인
+              </Button>
             )}
             {isLoggedIn && (
               <Button 
@@ -573,12 +574,14 @@ export default function MainPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                       메모리 기능은 로그인 사용자만 이용할 수 있습니다.
                     </p>
-                    <Link href="/login">
-                      <Button variant="outline" size="sm">
-                        <LogIn className="h-3 w-3 mr-1" />
-                        로그인하기
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => signIn('google')}
+                    >
+                      <LogIn className="h-3 w-3 mr-1" />
+                      Google 로그인
+                    </Button>
                   </div>
                 )}
               </div>
@@ -621,12 +624,14 @@ export default function MainPage() {
                     <p className="text-sm text-muted-foreground mb-4">
                       대화 기록은 로그인 사용자만 이용할 수 있습니다.
                     </p>
-                    <Link href="/login">
-                      <Button variant="outline" size="sm">
-                        <LogIn className="h-3 w-3 mr-1" />
-                        로그인하기
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => signIn('google')}
+                    >
+                      <LogIn className="h-3 w-3 mr-1" />
+                      Google 로그인
+                    </Button>
                   </div>
                 )}
               </div>
