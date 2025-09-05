@@ -1,10 +1,11 @@
-v0.2 20250905 1004
+v0.2 20250905 1804
   - build success. pnpm
   - add supabase.
     - allow memory.
     - allow save mem on reloaded conversation.
       - login available
       - modify uuid problem.
+        - modify language problem
 v0.1.1 20250903 1225
   - adj. memory (db)
     - adj. memory spinner
