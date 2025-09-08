@@ -235,11 +235,12 @@ export default function MainPage() {
       }
 
       // Call memory extraction API
+      const isDemoMode = !isLoggedIn || userId === '00000000-0000-0000-0000-000000000001' || userId?.startsWith('demo-');
       const response = await fetch('/api/memories/extract', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-demo-mode': 'true',
+          'x-demo-mode': isDemoMode ? 'true' : 'false',
         },
         body: JSON.stringify({
           messages: messages,

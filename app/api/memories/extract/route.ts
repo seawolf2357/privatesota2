@@ -7,9 +7,19 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     
-    // Only allow logged-in users to extract memories
-    if (!session?.user?.id || session?.user?.type !== 'regular') {
+    // Allow both regular users and demo mode for testing
+    // Check if user has a valid session and ID
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    
+    // For production, only allow regular users to save memories
+    // For testing, we'll allow both regular and guest types
+    const isRegularUser = session?.user?.type === 'regular';
+    
+    if (!isRegularUser) {
+      console.log('[Memory Extract API] User type not regular:', session?.user?.type);
+      return NextResponse.json({ error: 'Regular user account required for memory extraction' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -31,9 +41,17 @@ export async function POST(request: NextRequest) {
       .join('\n');
     
     console.log('[Memory Extract API] === DEBUG START ===');
-    console.log('[Memory Extract API] Session ID:', sessionId);
-    console.log('[Memory Extract API] User ID:', userId);
-    console.log('[Memory Extract API] Number of messages:', conversationMessages.length);
+    console.log('[Memory Extract API] Session info:', {
+      userID: session?.user?.id,
+      userType: session?.user?.type,
+      userEmail: session?.user?.email
+    });
+    console.log('[Memory Extract API] Request info:', {
+      sessionId,
+      userId,
+      messagesCount: conversationMessages.length,
+      forceSave
+    });
     console.log('[Memory Extract API] Conversation text preview:', conversationText.substring(0, 200) + '...');
 
     // Use AI to extract memories

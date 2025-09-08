@@ -5,7 +5,7 @@ v0.2 20250905 1804
     - allow save mem on reloaded conversation.
       - login available
       - modify uuid problem.
-        - modify language problem
+        - modify language problem 12 lang. available
 v0.1.1 20250903 1225
   - adj. memory (db)
     - adj. memory spinner

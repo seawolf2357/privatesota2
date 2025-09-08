@@ -1,30 +1,92 @@
-:3000/:1  GET http://localhost:3000/ 500 (Internal Server Error)
-react-dom-client.development.js:24514 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
-node-stack-frames.ts:31 Uncaught Error: An unexpected Turbopack error occurred. Please see the output of `next dev` for more details.
-    at getServerError (node-stack-frames.ts:31:36)
-    at index.tsx:945:17
-getServerError @ node-stack-frames.ts:31
-(anonymous) @ index.tsx:945
-setTimeout
-hydrate @ index.tsx:923
-await in hydrate
-pageBootstrap @ page-bootstrap.ts:23
-(anonymous) @ next-dev-turbopack.ts:49
-Promise.then
-[project]/node_modules/.pnpm/next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km/node_modules/next/dist/client/next-dev-turbopack.js [client] (ecmascript) @ next-dev-turbopack.ts:28
-(anonymous) @ dev-base.ts:205
-runModuleExecutionHooks @ dev-base.ts:265
-instantiateModule @ dev-base.ts:203
-getOrInstantiateRuntimeModule @ dev-base.ts:101
-registerChunk @ runtime-backend-dom.ts:85
-await in registerChunk
-registerChunk @ runtime-base.ts:328
-(anonymous) @ dev-backend-dom.ts:127
-(anonymous) @ dev-backend-dom.ts:127
-websocket.ts:32 [HMR] connected
-report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
-report-hmr-latency.ts:26 [Fast Refresh] done in NaNms
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(10)
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(10)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(10)
+page-c308b4bf3a09dd42.js:1 Selected conversation: Object
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293000411
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Conversation saved successfully
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+content.js:27 Error translating word: Error: Could not establish connection. Receiving end does not exist.
+translate @ content.js:27
 content.js:1 Uncaught (in promise) The message port closed before a response was received.
-(anonymous) @ content.js:1
 content.js:1 Uncaught (in promise) The message port closed before a response was received.
-(anonymous) @ content.js:1
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
+page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293187092
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Conversation saved successfully
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293756910
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Conversation saved successfully
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(13)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Memories extracted: Object
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293812277
+page-c308b4bf3a09dd42.js:1 Auto-saving memories...
+page-c308b4bf3a09dd42.js:1 Conversation saved successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+page-c308b4bf3a09dd42.js:1 Conversation updated successfully
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
+page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
