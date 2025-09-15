@@ -1,92 +1,89 @@
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(10)
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(10)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(10)
-page-c308b4bf3a09dd42.js:1 Selected conversation: Object
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293000411
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Conversation saved successfully
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-content.js:27 Error translating word: Error: Could not establish connection. Receiving end does not exist.
-translate @ content.js:27
+  GET http://localhost:3000/ 500 (Internal Server Error)
+performFullReload @ webpack-internal:///…oader-client.js:379
+handleApplyUpdates @ webpack-internal:///…oader-client.js:341
+eval @ webpack-internal:///…oader-client.js:368
+Promise.then
+tryApplyUpdatesWebpack @ webpack-internal:///…oader-client.js:365
+handleSuccess @ webpack-internal:///…oader-client.js:114
+processMessage @ webpack-internal:///…oader-client.js:240
+eval @ webpack-internal:///…loader-client.js:71
+handleMessage @ webpack-internal:///…ges/websocket.js:65
+main.js:2456 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+index.js:640 Uncaught Error: Module not found: Can't resolve '@auth/core/errors'
+  1 | "use client";
+  2 | import * as React from "react";
+> 3 | import { AuthError } from "@auth/core/errors";
+    | ^
+  4 | /** @todo */
+  5 | class ClientFetchError extends AuthError {
+  6 | }
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/.pnpm/next-auth@5.0.0-beta.25_next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55._geblbm64fyoducj4g47s5w2oba/node_modules/next-auth/react.js
+./components/session-provider.tsx
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at getNotFoundError (file://D:\Project\VIDraft\PrivateSOTA2\privatesota2\node_modules\.pnpm\next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km\node_modules\next\dist\build\webpack\plugins\wellknown-errors-plugin\parseNotFoundError.js:135:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async getModuleBuildError (file://D:\Project\VIDraft\PrivateSOTA2\privatesota2\node_modules\.pnpm\next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km\node_modules\next\dist\build\webpack\plugins\wellknown-errors-plugin\webpackModuleError.js:103:27)
+    at async (file://D:\Project\VIDraft\PrivateSOTA2\privatesota2\node_modules\.pnpm\next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km\node_modules\next\dist\build\webpack\plugins\wellknown-errors-plugin\index.js:29:49)
+    at async (file://D:\Project\VIDraft\PrivateSOTA2\privatesota2\node_modules\.pnpm\next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km\node_modules\next\dist\build\webpack\plugins\wellknown-errors-plugin\index.js:27:21)
+getServerError @ node-stack-frames.js:49
+eval @ index.js:640
+setTimeout
+hydrate @ index.js:618
+await in hydrate
+pageBootstrap @ page-bootstrap.js:29
+eval @ next-dev.js:24
+Promise.then
+eval @ next-dev.js:22
+(pages-dir-browser)/./node_modules/.pnpm/next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55.0_react-dom@19.0.0-rc-45_vdvwrabvbnr2ybnxynn46nr5km/node_modules/next/dist/client/next-dev.js @ main.js:1502
+options.factory @ webpack.js:705
+__webpack_require__ @ webpack.js:37
+__webpack_exec__ @ main.js:2581
+(anonymous) @ main.js:2582
+webpackJsonpCallback @ webpack.js:1381
+(anonymous) @ main.js:9
+websocket.js:42 [HMR] connected
 content.js:1 Uncaught (in promise) The message port closed before a response was received.
+(anonymous) @ content.js:1
 content.js:1 Uncaught (in promise) The message port closed before a response was received.
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(11)
-page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293187092
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Conversation saved successfully
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293756910
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Conversation saved successfully
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 [ConversationHistory] Fetched conversations: Array(13)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Memories extracted: Object
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 New session started: user-session-1757293812277
-page-c308b4bf3a09dd42.js:1 Auto-saving memories...
-page-c308b4bf3a09dd42.js:1 Conversation saved successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
-page-c308b4bf3a09dd42.js:1 Conversation updated successfully
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] Fetched memories: Array(5)
-page-c308b4bf3a09dd42.js:1 [MemoryPanel] First memory date check: Object
+(anonymous) @ content.js:1
+client.js:82 ./node_modules/.pnpm/next-auth@5.0.0-beta.25_next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55._geblbm64fyoducj4g47s5w2oba/node_modules/next-auth/lib/client.js:3:1
+Module not found: Can't resolve '@auth/core/errors'
+  1 | "use client";
+  2 | import * as React from "react";
+> 3 | import { AuthError } from "@auth/core/errors";
+    | ^
+  4 | /** @todo */
+  5 | class ClientFetchError extends AuthError {
+  6 | }
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/.pnpm/next-auth@5.0.0-beta.25_next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55._geblbm64fyoducj4g47s5w2oba/node_modules/next-auth/react.js
+./components/session-provider.tsx
+nextJsHandleConsoleError @ client.js:82
+handleErrors @ hot-reloader-client.js:163
+processMessage @ hot-reloader-client.js:224
+eval @ hot-reloader-client.js:71
+handleMessage @ websocket.js:65
+client.js:82 ./node_modules/.pnpm/next-auth@5.0.0-beta.25_next@15.3.0-canary.31_@opentelemetry+api@1.9.0_@playwright+test@1.55._geblbm64fyoducj4g47s5w2oba/node_modules/next-auth/jwt.js:8:1
+Module not found: Can't resolve '@auth/core/jwt'
+  6 |  * @module jwt
+  7 |  */
+> 8 | export * from "@auth/core/jwt";
+    | ^
+  9 |
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./middleware.ts
+nextJsHandleConsoleError @ client.js:82
+handleErrors @ hot-reloader-client.js:163
+processMessage @ hot-reloader-client.js:224
+eval @ hot-reloader-client.js:71
+handleMessage @ websocket.js:65

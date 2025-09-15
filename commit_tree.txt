@@ -1,3 +1,5 @@
+v0.2.1 20250915 1814
+  - merge privatesota2_bak to Privatesota2
 v0.2 20250905 1804
   - build success. pnpm
   - add supabase.
