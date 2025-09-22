@@ -3,9 +3,20 @@ import { getBraveSearchClient } from '@/lib/ai/brave-search';
 import { MemoryManager } from '@/lib/ai/memory-manager';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 
-const FRIENDLI_API_KEY = 'flp_ZMMUt1CuH2dy0RLXxnbjwsfiZufsVqRu6w6ko2d3mrHc4';
-const FRIENDLI_BASE_URL = 'https://api.friendli.ai/dedicated/v1/chat/completions';
-const FRIENDLI_MODEL = 'dep86pjolcjjnv8';
+// Use environment variables for Friendli AI
+const FRIENDLI_API_KEY = process.env.FRIENDLI_API_KEY || '';
+const FRIENDLI_BASE_URL = process.env.FRIENDLI_URL || 'https://api.friendli.ai/dedicated/v1/chat/completions';
+const FRIENDLI_MODEL = process.env.FRIENDLI_MODEL || 'dep86pjolcjjnv8';
+
+// xAI Grok as fallback
+const XAI_API_KEY = process.env.XAI_API_KEY || '';
+const XAI_BASE_URL = 'https://api.x.ai/v1/chat/completions';
+const XAI_MODEL = 'grok-beta';
+
+// Fireworks AI as secondary fallback
+const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY || '';
+const FIREWORKS_BASE_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
+const FIREWORKS_MODEL = 'accounts/fireworks/models/qwen3-235b-a22b-instruct-2507';
 
 // Korean Standard Time
 function getCurrentTimeKST() {
@@ -357,24 +368,114 @@ ${message.content}`;
       max_tokens: 2000
     };
 
-    // Call Friendli AI
-    const response = await fetch(FRIENDLI_BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${FRIENDLI_API_KEY}`,
-        'Accept': 'text/event-stream'
-      },
-      body: JSON.stringify(payload)
-    });
+    // Try Friendli AI first, then fallback to xAI Grok
+    let response: Response;
+    let usingFallback = false;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Friendli AI error:', errorText);
-      return new Response(JSON.stringify({ error: 'AI service error' }), { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
+    try {
+      console.log('[AI API] Attempting Friendli AI...');
+      response = await fetch(FRIENDLI_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${FRIENDLI_API_KEY}`,
+          'Accept': 'text/event-stream'
+        },
+        body: JSON.stringify(payload)
       });
+
+      if (!response.ok) {
+        throw new Error(`Friendli AI error: ${response.status}`);
+      }
+      console.log('[AI API] Friendli AI successful');
+    } catch (friendliError) {
+      console.error('[AI API] Friendli AI failed:', friendliError);
+      console.log('[AI API] Falling back to xAI Grok...');
+
+      if (!XAI_API_KEY) {
+        console.error('[AI API] No xAI API key available');
+        return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Prepare payload for xAI Grok
+      const xaiPayload = {
+        model: XAI_MODEL,
+        messages: payload.messages,
+        stream: true,
+        temperature: payload.temperature,
+        max_tokens: payload.max_tokens
+      };
+
+      try {
+        response = await fetch(XAI_BASE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${XAI_API_KEY}`,
+            'Accept': 'text/event-stream'
+          },
+          body: JSON.stringify(xaiPayload)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[AI API] xAI Grok error:', errorText);
+          throw new Error(`xAI error: ${response.status}`);
+        }
+
+        console.log('[AI API] xAI Grok successful');
+        usingFallback = true;
+      } catch (xaiError) {
+        console.error('[AI API] xAI also failed:', xaiError);
+        console.log('[AI API] Trying Fireworks AI as final fallback...');
+
+        if (!FIREWORKS_API_KEY) {
+          console.error('[AI API] No Fireworks API key available');
+          return new Response(JSON.stringify({ error: 'All AI services unavailable' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Prepare payload for Fireworks AI
+        const fireworksPayload = {
+          model: FIREWORKS_MODEL,
+          messages: payload.messages,
+          stream: true,
+          temperature: payload.temperature,
+          max_tokens: payload.max_tokens
+        };
+
+        try {
+          response = await fetch(FIREWORKS_BASE_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${FIREWORKS_API_KEY}`,
+              'Accept': 'text/event-stream'
+            },
+            body: JSON.stringify(fireworksPayload)
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[AI API] Fireworks error:', errorText);
+            throw new Error(`Fireworks error: ${response.status}`);
+          }
+
+          console.log('[AI API] Fireworks AI successful');
+          usingFallback = true;
+        } catch (fireworksError) {
+          console.error('[AI API] All AI services failed:', fireworksError);
+          return new Response(JSON.stringify({ error: 'All AI services unavailable' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
     }
 
     // If we have search results, append citations after the stream

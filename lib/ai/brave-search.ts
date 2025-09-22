@@ -33,7 +33,7 @@ export class BraveSearchClient {
   private baseUrl = 'https://api.search.brave.com/res/v1/web/search';
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.BRAVE_SEARCH_API_KEY || '';
+    this.apiKey = apiKey || process.env.BRAVE_API_KEY || process.env.BRAVE_SEARCH_API_KEY || '';
     if (!this.apiKey) {
       console.warn('[BraveSearch] No API key configured');
     }
