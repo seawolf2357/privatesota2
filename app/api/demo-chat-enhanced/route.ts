@@ -1,7 +1,8 @@
-// Enhanced Friendli AI integration with memory and web search
+// Enhanced Friendli AI integration with memory, web search, and shopping
 import { getBraveSearchClient } from '@/lib/ai/brave-search';
 import { MemoryManager } from '@/lib/ai/memory-manager';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
+import { getShoppingAPIClient } from '@/lib/api/shopping-api';
 
 // Use environment variables for Friendli AI
 const FRIENDLI_API_KEY = process.env.FRIENDLI_API_KEY || '';
@@ -31,12 +32,13 @@ function getCurrentTimeKST() {
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const { 
-      message, 
+    const {
+      message,
       webSearchEnabled = false,
       userId = DEMO_USER_ID,
       sessionId,
-      includeMemories = false
+      includeMemories = false,
+      shoppingEnabled = true
     } = json;
 
     if (!message || !message.content) {
@@ -322,8 +324,70 @@ Important:
       }
     }
 
-    // Combine system prompt with search results
-    const fullSystemPrompt = systemPrompt + (searchContext ? '\n\n' + searchContext : '');
+    // Check for shopping intent and get recommendations
+    let shoppingContext = '';
+    if (shoppingEnabled) {
+      try {
+        const shoppingClient = getShoppingAPIClient();
+        const shoppingIntent = shoppingClient.detectShoppingIntent(message.content);
+
+        console.log('[Shopping] Intent detection:', shoppingIntent);
+
+        if (shoppingIntent.hasIntent && shoppingIntent.searchQuery) {
+          // Get user profile from memory (simplified for now)
+          const userProfile = {
+            demographics: {
+              lifestyle: '1인가구' as const,
+              budgetLevel: 'standard' as const
+            },
+            purchaseBehavior: {
+              priceSensitivity: 0.6,
+              brandLoyalty: 0.5,
+              varietySeeking: 0.7,
+              bulkBuying: false
+            },
+            foodPreferences: {
+              spicyLevel: 3 as const,
+              favoriteCategories: ['식품'],
+              avoidCategories: []
+            },
+            contextualNeeds: {
+              currentMood: shoppingIntent.mood
+            }
+          };
+
+          // Determine time context
+          const hour = new Date().getHours();
+          let timeOfDay: string;
+          if (hour >= 5 && hour < 11) timeOfDay = '아침';
+          else if (hour >= 11 && hour < 14) timeOfDay = '점심';
+          else if (hour >= 14 && hour < 18) timeOfDay = '오후';
+          else if (hour >= 18 && hour < 21) timeOfDay = '저녁';
+          else timeOfDay = '야식';
+
+          const recommendations = await shoppingClient.getPersonalizedRecommendations(
+            shoppingIntent.searchQuery,
+            userProfile,
+            { mood: shoppingIntent.mood, timeOfDay }
+          );
+
+          if (recommendations.products.length > 0) {
+            shoppingContext = shoppingClient.formatProductsForChat(
+              recommendations.products,
+              recommendations.reasoning
+            );
+            console.log('[Shopping] Found products:', recommendations.products.length);
+          }
+        }
+      } catch (error) {
+        console.error('[Shopping] Error getting recommendations:', error);
+      }
+    }
+
+    // Combine system prompt with search results and shopping recommendations
+    const fullSystemPrompt = systemPrompt +
+      (searchContext ? '\n\n' + searchContext : '') +
+      (shoppingContext ? '\n\n쇼핑 추천:\n' + shoppingContext : '');
 
     // Add language-specific instruction to enforce correct response language
     let userContent = message.content;
@@ -470,6 +534,21 @@ ${message.content}`;
           usingFallback = true;
         } catch (fireworksError) {
           console.error('[AI API] All AI services failed:', fireworksError);
+
+          // Fallback to mock response for testing when all AI services fail
+          if (shoppingContext) {
+            // If we have shopping recommendations, return them as a simple response
+            const mockResponse = `data: {"choices":[{"delta":{"content":"${shoppingContext.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"}}]}\n\ndata: [DONE]\n\n`;
+
+            return new Response(mockResponse, {
+              headers: {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+              }
+            });
+          }
+
           return new Response(JSON.stringify({ error: 'All AI services unavailable' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
