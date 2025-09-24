@@ -28,6 +28,10 @@ export interface ShoppingProduct {
   updated_at?: string;
 }
 
+interface ProductWithLink extends ShoppingProduct {
+  purchaseLink: string;
+}
+
 export interface UserShoppingProfile {
   demographics: {
     ageGroup?: '20대' | '30대' | '40대' | '50대+';
@@ -276,37 +280,90 @@ export class ShoppingAPIClient {
     return reasons.length > 0 ? reasons.join('. ') : '고객님께 맞는 최적의 상품을 추천드립니다';
   }
 
-  // Format for chat response
+  // Generate purchase link for a product
+  generatePurchaseLink(product: ShoppingProduct): string {
+    // Since RecoverShop doesn't have direct product pages,
+    // link to the main site with search for the product name
+    // Users can then find and purchase the product
+    const encodedName = encodeURIComponent(product.name);
+    return `http://recovershop.co.kr/?search=${encodedName}`;
+  }
+
+  // Format for chat response with images and detailed product info
   formatProductsForChat(products: ShoppingProduct[], reasoning?: string): string {
     if (products.length === 0) {
       return '죄송해요, 관련 상품을 찾을 수 없어요. 다른 검색어로 시도해보세요.';
     }
 
-    let response = '🛒 **맞춤 추천 상품**\n\n';
+    let response = '';
 
+    // Add mood-based greeting if reasoning is provided
     if (reasoning) {
-      response += `💡 ${reasoning}\n\n`;
+      response += `${reasoning}\n\n`;
     }
 
-    products.slice(0, 5).forEach((product, index) => {
-      const emoji = index === 0 ? '⭐' : `${index + 1}.`;
-      response += `${emoji} **${product.name}**\n`;
-      response += `   💰 ${product.price.toLocaleString()}원`;
+    response += '## 🛒 추천 상품\n\n';
+
+    products.slice(0, 4).forEach((product, index) => {
+      const ranking = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '⭐';
+
+      // Add product image if available
+      if (product.image) {
+        // Use proxy to handle CORS issues
+        const proxiedImageUrl = `http://localhost:3001/api/image-proxy?url=${encodeURIComponent(product.image)}`;
+        response += `![${product.name}](${proxiedImageUrl})\n\n`;
+      }
+
+      // Product title and price
+      response += `### ${ranking} ${product.name}\n\n`;
+      response += `**💰 ${product.price.toLocaleString()}원**`;
 
       if (product.shipping_fee === 0) {
-        response += ' (무료배송)';
+        response += ' `무료배송`';
       }
 
-      response += `\n   📦 재고: ${product.stock}개\n`;
+      // Stock status
+      if (product.stock > 0 && product.stock < 10) {
+        response += ' `⚠️ 품절임박`';
+      } else if (product.stock > 50) {
+        response += ' `✅ 재고충분`';
+      }
 
+      response += '\n\n';
+
+      // Additional details in a clean format
+      const details = [];
+
+      if (product.category) {
+        details.push(`카테고리: ${product.category.category_name}`);
+      }
+
+      if (product.minimum_order_quantity > 1) {
+        details.push(`최소주문: ${product.minimum_order_quantity}개`);
+      }
+
+      if (details.length > 0) {
+        response += `📋 ${details.join(' | ')}\n\n`;
+      }
+
+      // Add purchase hint for top product
       if (index === 0) {
-        response += '   🎯 최고의 매칭!\n';
+        response += '> 💡 **베스트 상품** - 가장 많이 찾는 인기 상품이에요!\n\n';
       }
 
-      response += '\n';
+      // Add separator except for last item
+      if (index < Math.min(3, products.length - 1)) {
+        response += '---\n\n';
+      }
     });
 
-    response += '더 자세한 정보가 필요하시면 말씀해주세요!';
+    // Purchase guide with better formatting
+    response += '\n---\n\n';
+    response += '### 💳 구매 방법\n\n';
+    response += '1. **[RecoverShop 바로가기 →](http://recovershop.co.kr)**\n';
+    response += '2. 로그인 → 상품명 검색 → 구매\n';
+    response += '3. 모든 상품 **무료배송** 혜택!\n\n';
+    response += '> 궁금한 점이 있으시면 언제든 물어보세요! 😊';
 
     return response;
   }

@@ -19,14 +19,47 @@ const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY || '';
 const FIREWORKS_BASE_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
 const FIREWORKS_MODEL = 'accounts/fireworks/models/qwen3-235b-a22b-instruct-2507';
 
-// Korean Standard Time
+// Korean Standard Time and Context
 function getCurrentTimeKST() {
-  // Create a date object with the current time
   const now = new Date();
-  
-  // Format to KST using Intl.DateTimeFormat
-  // This will automatically handle timezone conversion
-  return now;
+  const kstOffset = 9 * 60; // KST is UTC+9
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const kstTime = new Date(utcTime + (kstOffset * 60000));
+  return kstTime;
+}
+
+function getTimeContext(): string {
+  const hour = getCurrentTimeKST().getHours();
+  if (hour >= 5 && hour < 10) return '아침';
+  if (hour >= 10 && hour < 14) return '점심';
+  if (hour >= 14 && hour < 18) return '오후';
+  if (hour >= 18 && hour < 22) return '저녁';
+  return '야식';
+}
+
+function getSeasonContext(): string {
+  const month = getCurrentTimeKST().getMonth() + 1;
+  if (month >= 3 && month <= 5) return '봄';
+  if (month >= 6 && month <= 8) return '여름';
+  if (month >= 9 && month <= 11) return '가을';
+  return '겨울';
+}
+
+function getMoodFromMessage(message: string): string | undefined {
+  const moods: Record<string, string[]> = {
+    '스트레스': ['스트레스', '짜증', '힘들', '피곤'],
+    '우울': ['우울', '슬퍼', '외로워', '쓸쓸'],
+    '기쁨': ['기뻐', '좋아', '신나', '행복'],
+    '피곤': ['피곤', '졸려', '지쳐', '나른'],
+    '건강관심': ['다이어트', '건강', '운동', '살빼기']
+  };
+
+  for (const [mood, keywords] of Object.entries(moods)) {
+    if (keywords.some(k => message.includes(k))) {
+      return mood;
+    }
+  }
+  return undefined;
 }
 
 export async function POST(request: Request) {
@@ -50,6 +83,13 @@ export async function POST(request: Request) {
       webSearchEnabled,
       includeMemories
     });
+
+    // Get contextual information
+    const timeContext = getTimeContext();
+    const seasonContext = getSeasonContext();
+    const detectedMood = getMoodFromMessage(message.content);
+    const dayOfWeek = getCurrentTimeKST().getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
     // Get current time info
     const currentTime = getCurrentTimeKST();
@@ -333,42 +373,64 @@ Important:
 
         console.log('[Shopping] Intent detection:', shoppingIntent);
 
-        if (shoppingIntent.hasIntent && shoppingIntent.searchQuery) {
-          // Get user profile from memory (simplified for now)
+        if (shoppingIntent.hasIntent) {
+          // Enhanced user profiling based on context
           const userProfile = {
             demographics: {
-              lifestyle: '1인가구' as const,
-              budgetLevel: 'standard' as const
+              lifestyle: '1인가구' as const, // TODO: Extract from memory
+              budgetLevel: 'standard' as const,
+              ageGroup: '30대' as const // TODO: Infer from conversation
             },
             purchaseBehavior: {
-              priceSensitivity: 0.6,
+              priceSensitivity: detectedMood === '스트레스' ? 0.3 : 0.6, // Lower when stressed
               brandLoyalty: 0.5,
-              varietySeeking: 0.7,
-              bulkBuying: false
+              varietySeeking: detectedMood === '우울' ? 0.3 : 0.7, // Comfort food when sad
+              bulkBuying: isWeekend // Bulk buy on weekends
             },
             foodPreferences: {
               spicyLevel: 3 as const,
-              favoriteCategories: ['식품'],
-              avoidCategories: []
+              favoriteCategories: ['식품', '간식'],
+              avoidCategories: [],
+              dietaryRestrictions: [] // TODO: Extract from memory
             },
             contextualNeeds: {
-              currentMood: shoppingIntent.mood
+              currentMood: detectedMood || shoppingIntent.mood,
+              healthGoals: [], // TODO: Extract from memory
+              upcomingEvents: isWeekend ? ['주말'] : [],
+              seasonalPreferences: new Map([[seasonContext, []]])
             }
           };
 
-          // Determine time context
-          const hour = new Date().getHours();
-          let timeOfDay: string;
-          if (hour >= 5 && hour < 11) timeOfDay = '아침';
-          else if (hour >= 11 && hour < 14) timeOfDay = '점심';
-          else if (hour >= 14 && hour < 18) timeOfDay = '오후';
-          else if (hour >= 18 && hour < 21) timeOfDay = '저녁';
-          else timeOfDay = '야식';
+          // Enhanced context with time, mood, and season
+          const enhancedContext = {
+            mood: detectedMood || shoppingIntent.mood,
+            timeOfDay: timeContext,
+            season: seasonContext,
+            isWeekend,
+            query: shoppingIntent.searchQuery || message.content
+          };
 
+          // Determine search query based on context if not explicitly provided
+          let searchQuery = shoppingIntent.searchQuery;
+          if (!searchQuery) {
+            // Context-based query generation
+            if (enhancedContext.mood === '스트레스') {
+              searchQuery = '초콜릿';
+            } else if (enhancedContext.timeOfDay === '야식') {
+              searchQuery = '라면';
+            } else if (enhancedContext.timeOfDay === '아침') {
+              searchQuery = '빵';
+            } else if (enhancedContext.isWeekend) {
+              searchQuery = '과자';
+            } else {
+              searchQuery = '간식';
+            }
+          }
+          // Use personalized recommendations with enhanced context
           const recommendations = await shoppingClient.getPersonalizedRecommendations(
-            shoppingIntent.searchQuery,
+            searchQuery,
             userProfile,
-            { mood: shoppingIntent.mood, timeOfDay }
+            enhancedContext
           );
 
           if (recommendations.products.length > 0) {
@@ -385,9 +447,31 @@ Important:
     }
 
     // Combine system prompt with search results and shopping recommendations
+    let shoppingInstructions = '';
+    if (shoppingContext && detectedLanguage === 'ko') {
+      // Add personalized shopping instructions for Korean users
+      if (detectedMood) {
+        const moodMessages = {
+          '스트레스': '\n힘든 하루였군요. 달콤한 간식으로 기분을 풀어보세요!',
+          '피곤': '\n피곤하시네요. 에너지를 충전할 수 있는 제품들이에요.',
+          '우울': '\n마음이 힘드신가요? 행복한 맛으로 기분을 달래보세요.',
+          '기쁨': '\n기분 좋은 날이네요! 특별한 간식으로 더 행복해지세요!'
+        };
+        shoppingInstructions = moodMessages[detectedMood] || '';
+      }
+
+      if (isWeekend) {
+        shoppingInstructions += '\n주말 특별 할인 상품도 포함했어요!';
+      }
+
+      if (timeContext === '야식') {
+        shoppingInstructions += '\n야식으로 딱 좋은 상품들이에요. 배송비가 무료인 것들 위주로 골라봤어요!';
+      }
+    }
+
     const fullSystemPrompt = systemPrompt +
       (searchContext ? '\n\n' + searchContext : '') +
-      (shoppingContext ? '\n\n쇼핑 추천:\n' + shoppingContext : '');
+      (shoppingContext ? '\n\n쇼핑 추천 정보입니다. 아래 내용을 그대로 전달하되, 자연스럽게 대화체로 응답해주세요. 특히 이미지 마크다운(![상품명](URL))은 반드시 유지해야 합니다:\n' + shoppingInstructions + '\n' + shoppingContext : '');
 
     // Add language-specific instruction to enforce correct response language
     let userContent = message.content;
@@ -592,6 +676,9 @@ ${message.content}`;
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
         },
       });
     }
@@ -602,14 +689,34 @@ ${message.content}`;
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
       },
     });
     
   } catch (error) {
     console.error('Enhanced Demo Chat API error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), { 
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
     });
   }
+}
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
 }
