@@ -175,13 +175,17 @@ export const userMemory = pgTable('UserMemory', {
   userId: uuid('userId')
     .notNull()
     .references(() => user.id),
-  category: varchar('category', { 
-    enum: ['personal_info', 'preferences', 'important_dates', 'tasks', 'notes', 'general'] 
+  category: varchar('category', {
+    enum: [
+      'personal_info', 'preferences', 'important_dates', 'tasks', 'notes', 'general',
+      'relationships', 'work', 'health', 'hobbies', 'goals', 'experiences',
+      'skills', 'education', 'finance', 'travel', 'food', 'entertainment'
+    ]
   }).notNull(),
   content: text('content').notNull(),
   confidence: json('confidence').$type<number>().default(1.0),
-  metadata: json('metadata').$type<{ 
-    source?: string; 
+  metadata: json('metadata').$type<{
+    source?: string;
     extractedFrom?: string;
     language?: string;
   }>(),

@@ -6,13 +6,25 @@ import { userMemory, chat, message, type UserMemory } from '@/lib/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { myFriendliProvider } from './providers-friendli';
 
-export type MemoryCategory = 
-  | 'personal_info' 
-  | 'preferences' 
-  | 'important_dates' 
-  | 'tasks' 
-  | 'notes' 
-  | 'general';
+export type MemoryCategory =
+  | 'personal_info'
+  | 'preferences'
+  | 'important_dates'
+  | 'tasks'
+  | 'notes'
+  | 'general'
+  | 'relationships'
+  | 'work'
+  | 'health'
+  | 'hobbies'
+  | 'goals'
+  | 'experiences'
+  | 'skills'
+  | 'education'
+  | 'finance'
+  | 'travel'
+  | 'food'
+  | 'entertainment';
 
 export interface ExtractedMemory {
   category: MemoryCategory;
@@ -304,6 +316,18 @@ ${conversationText}`;
         tasks: '할 일',
         notes: '메모',
         general: '일반',
+        relationships: '인간관계',
+        work: '업무',
+        health: '건강',
+        hobbies: '취미',
+        goals: '목표',
+        experiences: '경험',
+        skills: '기술',
+        education: '교육',
+        finance: '금융',
+        travel: '여행',
+        food: '음식',
+        entertainment: '엔터테인먼트',
       };
 
       Object.entries(categorizedMemories).forEach(([category, items]) => {

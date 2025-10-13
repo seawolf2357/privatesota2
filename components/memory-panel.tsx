@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trash2, Brain, Calendar, User, Heart, StickyNote, ListTodo, AlertTriangle } from 'lucide-react';
+import { Trash2, Brain, Calendar, User, Heart, StickyNote, ListTodo, AlertTriangle, Users, Briefcase, Activity, Gamepad2, Target, Sparkles, Wrench, GraduationCap, DollarSign, Plane, UtensilsCrossed, Tv } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,18 @@ const categoryIcons = {
   tasks: ListTodo,
   notes: StickyNote,
   general: Brain,
+  relationships: Users,
+  work: Briefcase,
+  health: Activity,
+  hobbies: Gamepad2,
+  goals: Target,
+  experiences: Sparkles,
+  skills: Wrench,
+  education: GraduationCap,
+  finance: DollarSign,
+  travel: Plane,
+  food: UtensilsCrossed,
+  entertainment: Tv,
 };
 
 const categoryColors = {
@@ -43,6 +55,18 @@ const categoryColors = {
   tasks: 'bg-yellow-500/10 text-yellow-500',
   notes: 'bg-purple-500/10 text-purple-500',
   general: 'bg-gray-500/10 text-gray-500',
+  relationships: 'bg-indigo-500/10 text-indigo-500',
+  work: 'bg-slate-500/10 text-slate-500',
+  health: 'bg-red-500/10 text-red-500',
+  hobbies: 'bg-orange-500/10 text-orange-500',
+  goals: 'bg-emerald-500/10 text-emerald-500',
+  experiences: 'bg-violet-500/10 text-violet-500',
+  skills: 'bg-cyan-500/10 text-cyan-500',
+  education: 'bg-blue-600/10 text-blue-600',
+  finance: 'bg-green-600/10 text-green-600',
+  travel: 'bg-sky-500/10 text-sky-500',
+  food: 'bg-amber-500/10 text-amber-500',
+  entertainment: 'bg-fuchsia-500/10 text-fuchsia-500',
 };
 
 const categoryNames = {
@@ -52,6 +76,18 @@ const categoryNames = {
   tasks: '할 일',
   notes: '메모',
   general: '일반',
+  relationships: '인간관계',
+  work: '업무',
+  health: '건강',
+  hobbies: '취미',
+  goals: '목표',
+  experiences: '경험',
+  skills: '기술',
+  education: '교육',
+  finance: '금융',
+  travel: '여행',
+  food: '음식',
+  entertainment: '엔터테인먼트',
 };
 
 export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps) {
