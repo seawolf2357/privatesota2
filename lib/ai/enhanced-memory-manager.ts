@@ -1,6 +1,6 @@
 /**
- * Enhanced Memory Manager - Phase 1 Implementation
- * Core memory processing system for PrivateSOTA2
+ * 향상된 메모리 관리자 - 모든 Phase 통합
+ * Phase 1-5의 모든 시스템을 통합한 메모리 관리
  */
 
 interface Message {
@@ -18,6 +18,7 @@ interface UserMemory {
   createdAt: Date;
   confidence?: number;
   sessionId?: string;
+  metadata?: Record<string, any>;
 }
 
 interface EnhancedMemoryResult {
@@ -35,19 +36,33 @@ interface EnhancedMemoryResult {
 
 interface ImportanceAnalysis {
   importance: number;
-  action: 'save' | 'defer' | 'skip';
+  action: 'defer' | 'process' | 'skip';
   suggestedCategory?: string;
-  reasoning: string;
+  dimensions: {
+    personalInfo: number;
+    preferences: number;
+    relationships: number;
+    skills: number;
+    experiences: number;
+    goals: number;
+  };
 }
 
 export class EnhancedMemoryManager {
+  private userThresholds: Map<string, number> = new Map();
+  private deferredMessages: Map<string, Message[]> = new Map();
+
+  // Default importance threshold
+  private readonly DEFAULT_THRESHOLD = 0.5;
+  private readonly LEARNING_RATE = 0.1;
 
   constructor() {
-    console.log('[EnhancedMemoryManager] Initialized');
+    console.log('[EnhancedMemoryManager] Initialized with all 5 phases');
   }
 
   /**
-   * Basic memory processing with importance analysis
+   * 통합 메모리 처리 시스템
+   * 모든 Phase의 기능을 순차적으로 적용
    */
   async processMemoryComprehensively(
     message: Message,

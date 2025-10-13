@@ -78,13 +78,20 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
       if (response.ok) {
         const data = await response.json();
         console.log('[MemoryPanel] Fetched memories:', data);
-      console.log('[MemoryPanel] First memory date check:', {
-        raw: data[0]?.updatedAt,
-        parsed: data[0]?.updatedAt ? new Date(data[0].updatedAt) : null,
-        isValid: data[0]?.updatedAt ? !isNaN(Date.parse(data[0].updatedAt)) : false
-      });
-        // 원본 데이터 그대로 사용 (날짜 조작 제거)
-        setMemories(data);
+
+        // Extract memories array from API response
+        const memoriesArray = data.success && data.memories ?
+          Object.values(data.memories).flat() : // Flatten grouped memories
+          (Array.isArray(data) ? data : []);
+
+        console.log('[MemoryPanel] First memory date check:', {
+          raw: memoriesArray[0]?.updatedAt,
+          parsed: memoriesArray[0]?.updatedAt ? new Date(memoriesArray[0].updatedAt) : null,
+          isValid: memoriesArray[0]?.updatedAt ? !isNaN(Date.parse(memoriesArray[0].updatedAt)) : false
+        });
+
+        // Set memories as array
+        setMemories(memoriesArray);
       }
     } catch (error) {
       console.error('Failed to fetch memories:', error);
@@ -112,11 +119,14 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
     }
   };
 
-  const filteredMemories = selectedCategory
-    ? memories.filter(m => m.category === selectedCategory)
-    : memories;
+  // Ensure memories is always an array
+  const memoryArray = Array.isArray(memories) ? memories : [];
 
-  const memoriesByCategory = memories.reduce((acc, memory) => {
+  const filteredMemories = selectedCategory
+    ? memoryArray.filter(m => m.category === selectedCategory)
+    : memoryArray;
+
+  const memoriesByCategory = memoryArray.reduce((acc, memory) => {
     if (!acc[memory.category]) {
       acc[memory.category] = [];
     }
@@ -144,7 +154,7 @@ export function MemoryPanel({ userId, className, refreshKey }: MemoryPanelProps)
               size="sm"
               onClick={() => setSelectedCategory(null)}
             >
-              전체 ({memories.length})
+              전체 ({memoryArray.length})
             </Button>
             {Object.entries(memoriesByCategory).map(([category, items]) => {
               const Icon = categoryIcons[category as keyof typeof categoryIcons] || Brain;

@@ -456,8 +456,9 @@ export default function MainPage() {
               </Button>
             )}
           </div>
-          <div className="text-xs text-muted-foreground">
-            현재 시간 (KST): {currentTime ? formatKSTTime(currentTime) : 'Loading...'}
+          <div className="text-xs text-muted-foreground flex flex-col gap-0.5">
+            <span className="font-medium">현재 시간 (KST)</span>
+            <span>{currentTime ? formatKSTTime(currentTime) : 'Loading...'}</span>
           </div>
         </div>
 
@@ -517,7 +518,7 @@ export default function MainPage() {
                     }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-black rounded-full transition-transform ${
                         webSearchEnabled ? 'translate-x-5' : ''
                       }`}
                     />
@@ -537,7 +538,7 @@ export default function MainPage() {
                     }`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-black rounded-full transition-transform ${
                         selfLearningEnabled && isLoggedIn ? 'translate-x-5' : ''
                       }`}
                     />

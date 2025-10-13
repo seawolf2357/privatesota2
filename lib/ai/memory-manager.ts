@@ -171,13 +171,19 @@ ${conversationText}`;
         
         if (existingMemory.content !== content || hoursSinceUpdate > 1) {
           // Update with new content or refresh timestamp
+          const updatedMetadata = {
+            ...(existingMemory.metadata || {}),
+            sourceSessionId: sourceSessionId || existingMemory.metadata?.sourceSessionId,
+            lastUpdated: new Date().toISOString()
+          };
+
           await db
             .update(userMemory)
             .set({
               content: content,
               confidence: Math.min(1.0, (existingMemory.confidence as number || 0) + 0.1),
-              updatedAt: new Date(),
-              sourceSessionId: sourceSessionId || existingMemory.sourceSessionId,
+              metadata: updatedMetadata,
+              updatedAt: new Date()
             })
             .where(eq(userMemory.id, existingMemory.id));
 
@@ -196,13 +202,14 @@ ${conversationText}`;
             category,
             content,
             confidence,
-            sourceSessionId,
             metadata: {
               extractedFrom: 'conversation',
               source: 'jetXA',
+              sourceSessionId: sourceSessionId || null
             },
             createdAt: new Date(),
             updatedAt: new Date(),
+            sourceSessionId: sourceSessionId && sourceSessionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? sourceSessionId : null
           })
           .returning();
 
@@ -243,7 +250,7 @@ ${conversationText}`;
             eq(userMemory.category, category)
           )
         )
-        .orderBy(desc(userMemory.confidence));
+        .orderBy(desc(userMemory.updatedAt));
 
       return memories;
     } catch (error) {

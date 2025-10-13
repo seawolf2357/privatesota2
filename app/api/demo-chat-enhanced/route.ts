@@ -1,8 +1,11 @@
 // Enhanced Friendli AI integration with memory, web search, and shopping
 import { getBraveSearchClient } from '@/lib/ai/brave-search';
 import { MemoryManager } from '@/lib/ai/memory-manager';
+import { getEnhancedMemoryManagerV2 } from '@/lib/ai/enhanced-memory-manager-v2';
+import type { Message as MemoryMessage, UserMemory } from '@/lib/ai/types';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 import { getShoppingAPIClient } from '@/lib/api/shopping-api';
+import { getVectorMemoryManager } from '@/lib/ai/vector-memory-manager';
 
 // Use environment variables for Friendli AI
 const FRIENDLI_API_KEY = process.env.FRIENDLI_API_KEY || '';
@@ -90,6 +93,125 @@ export async function POST(request: Request) {
     const detectedMood = getMoodFromMessage(message.content);
     const dayOfWeek = getCurrentTimeKST().getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    // Process message with Enhanced Memory Manager V2
+    const enhancedMemoryManager = getEnhancedMemoryManagerV2();
+
+    // Load existing memories for context
+    let memoriesContext = '';
+    let relatedMemoriesContext = '';
+    if (includeMemories) {
+      try {
+        const memoryManager = new MemoryManager(userId);
+        const memories = await memoryManager.getAllMemories();
+
+        if (memories.length > 0) {
+          console.log(`[MemoryLoader] Found ${memories.length} memories for user ${userId}`);
+
+          // Group memories by category for better organization
+          const categorizedMemories: Record<string, string[]> = {};
+          memories.forEach(memory => {
+            if (!categorizedMemories[memory.category]) {
+              categorizedMemories[memory.category] = [];
+            }
+            categorizedMemories[memory.category].push(memory.content);
+          });
+
+          // Format memories for prompt
+          memoriesContext = '\n\n📚 기억된 정보:\n';
+          for (const [category, items] of Object.entries(categorizedMemories)) {
+            const categoryName = category.replace('_', ' ').toUpperCase();
+            memoriesContext += `\n[${categoryName}]\n`;
+            items.forEach(item => {
+              memoriesContext += `• ${item}\n`;
+            });
+          }
+
+          console.log('[MemoryLoader] Memories loaded and formatted for context');
+
+          // Try vector search for related memories
+          try {
+            const vectorManager = getVectorMemoryManager(process.env.OPENAI_API_KEY);
+            relatedMemoriesContext = await vectorManager.getRelatedMemories(
+              message.content,
+              userId,
+              3
+            );
+            if (relatedMemoriesContext) {
+              console.log('[VectorSearch] Found related memories via semantic search');
+              memoriesContext += relatedMemoriesContext;
+            }
+          } catch (error) {
+            console.log('[VectorSearch] Vector search error:', error);
+            console.log('[VectorSearch] Falling back to basic memory only');
+          }
+        } else {
+          console.log('[MemoryLoader] No memories found for user');
+        }
+      } catch (error) {
+        console.error('[MemoryLoader] Error loading memories:', error);
+      }
+    }
+
+    // Create memory message object
+    const memoryMessage: MemoryMessage = {
+      role: 'user',
+      content: message.content,
+      timestamp: new Date(),
+      sessionId: sessionId || 'demo-session'
+    };
+
+    // Process memory asynchronously (don't block the response)
+    const processMemory = async () => {
+      try {
+        const memoryResult = await enhancedMemoryManager.processMemoryComprehensively(
+          memoryMessage,
+          userId,
+          [], // TODO: Load existing memories from database
+          [] // TODO: Load conversation history
+        );
+
+        console.log('[EnhancedMemory] Processing result:', {
+          shouldSave: memoryResult.shouldSave,
+          category: memoryResult.processedMemory?.category,
+          importance: memoryResult.processedMemory?.importance,
+          emotion: memoryResult.processedMemory?.emotionalContext?.primaryEmotion
+        });
+
+        // If memory should be saved, store it in the database
+        if (memoryResult.shouldSave && memoryResult.processedMemory) {
+          // Initialize MemoryManager with userId
+          const memoryManager = new MemoryManager(userId);
+
+          // Extract confidence value (default to 1.0 if not provided)
+          const confidence = memoryResult.processedMemory.confidence || 1.0;
+
+          // Save memory with correct parameters - ensure sessionId is valid UUID format
+          const validSessionId = sessionId && sessionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+            ? sessionId
+            : null;
+
+          await memoryManager.saveMemory(
+            memoryResult.processedMemory.category || 'general',
+            memoryResult.processedMemory.content || '',
+            confidence,
+            validSessionId
+          );
+
+          console.log('[EnhancedMemory] Memory saved successfully with:', {
+            category: memoryResult.processedMemory.category,
+            content: memoryResult.processedMemory.content?.substring(0, 50) + '...' || 'N/A',
+            confidence: confidence,
+            sessionId: validSessionId
+          });
+        }
+      } catch (error) {
+        console.error('[EnhancedMemory] Error processing memory:', error);
+      }
+    };
+
+    // Start memory processing in background
+    processMemory();
 
     // Get current time info
     const currentTime = getCurrentTimeKST();
@@ -183,6 +305,7 @@ ${timeInfo}
 4. 모든 언어로 자연스러운 대화
 5. 웹 검색을 통한 최신 정보 제공
 6. 사용자 정보 기억 및 개인화된 대화
+${memoriesContext}
 
 **매우 중요한 언어 규칙:**
 - 🚨 절대적으로 중요: 반드시 한국어로만 응답하세요
@@ -191,7 +314,7 @@ ${timeInfo}
 - 한국어가 아닌 언어로 응답하는 것은 금지됩니다
 - 웹 검색 결과가 영어라도 한국어로 번역해서 답변하세요
 
-중요: 
+중요:
 - 사용자가 파일을 업로드했다면, 파일 내용을 인지하고 관련 질문에 답변하세요.
 - 웹 검색 결과를 사용할 때는 반드시 [출처: 번호] 형식으로 출처를 명시하세요.
 - 기억된 정보를 활용하여 더 개인화된 답변을 제공하세요.
@@ -214,6 +337,7 @@ Functions:
 4. Natural conversation in any language
 5. Provide latest information through web search
 6. Remember user information for personalized conversations
+${memoriesContext}
 
 Important Language Rules:
 - CRITICAL: Always respond in the SAME LANGUAGE as the user's input
@@ -712,11 +836,12 @@ ${message.content}`;
 // Handle CORS preflight requests
 export async function OPTIONS() {
   return new Response(null, {
-    status: 200,
+    status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization',
+      'Access-Control-Max-Age': '86400',
     }
   });
 }
