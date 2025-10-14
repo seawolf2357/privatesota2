@@ -21,10 +21,13 @@ export async function GET(request: NextRequest) {
     // Group by category for better organization
     const groupedMemories: Record<string, any[]> = {};
     memories.forEach(memory => {
-      if (!groupedMemories[memory.category]) {
-        groupedMemories[memory.category] = [];
+      // Fix undefined categories by converting them to 'general'
+      const category = (memory.category as string) === 'undefined' || !memory.category ? 'general' : memory.category;
+
+      if (!groupedMemories[category]) {
+        groupedMemories[category] = [];
       }
-      groupedMemories[memory.category].push({
+      groupedMemories[category].push({
         id: memory.id,
         content: memory.content,
         confidence: memory.confidence,

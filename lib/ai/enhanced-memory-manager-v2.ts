@@ -1084,23 +1084,7 @@ export class EnhancedMemoryManagerV2 {
 
 // ==================== TYPE DEFINITIONS ====================
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  sessionId: string;
-}
-
-interface UserMemory {
-  id: string;
-  userId: string;
-  content: string;
-  category: string;
-  createdAt: Date;
-  confidence?: number;
-  sessionId?: string;
-  metadata?: Record<string, any>;
-}
+// Message and UserMemory are imported from './types' at the top
 
 interface CategoryMetadata {
   name: string;

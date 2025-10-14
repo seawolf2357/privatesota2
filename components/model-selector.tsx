@@ -42,71 +42,90 @@ export function ModelSelector({ selectedModelId, onModelChange, className }: Mod
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={5} className="w-[280px] z-50">
-          <DropdownMenuLabel className="flex items-center justify-between">
-            <div className="flex gap-1">
-              {MODEL_CATEGORIES.map(cat => (
-                <Button
-                  key={cat.value}
-                  variant={category === cat.value ? "default" : "ghost"}
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCategory(cat.value);
-                  }}
+        <DropdownMenuContent
+          align="end"
+          side="bottom"
+          sideOffset={5}
+          alignOffset={-5}
+          collisionPadding={10}
+          avoidCollisions={true}
+          className="w-[350px] p-0 z-50"
+        >
+          <div className="flex flex-col max-h-[min(400px,calc(100vh-120px))]" style={{ maxHeight: 'min(400px, calc(100vh - 120px))' }}>
+            {/* Header - Category Filter */}
+            <div className="flex-shrink-0">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <div className="flex gap-1 flex-wrap">
+                  {MODEL_CATEGORIES.map(cat => (
+                    <Button
+                      key={cat.value}
+                      variant={category === cat.value ? "default" : "ghost"}
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCategory(cat.value);
+                      }}
+                    >
+                      {cat.label}
+                    </Button>
+                  ))}
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 min-h-0">
+              {models.map((model) => (
+                <DropdownMenuItem
+                  key={model.id}
+                  onClick={() => model.available && onModelChange(model.id)}
+                  disabled={!model.available}
+                  className={cn(
+                    "flex items-start gap-3 p-3 cursor-pointer",
+                    !model.available && "opacity-50 cursor-not-allowed"
+                  )}
                 >
-                  {cat.label}
-                </Button>
+                  <span className="text-xl mt-0.5 flex-shrink-0">{model.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium break-words">{model.name}</span>
+                      {model.id === selectedModelId && model.available && (
+                        <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                      )}
+                      {model.comingSoon && (
+                        <Badge variant="secondary" className="px-1.5 py-0 text-xs flex-shrink-0">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Coming Soon
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 break-words line-clamp-2">
+                      {model.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <Badge variant="outline" className="text-xs px-1.5 py-0">
+                        {model.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        Max {model.maxTokens} tokens
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
               ))}
             </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          
-          {models.map((model) => (
-            <DropdownMenuItem
-              key={model.id}
-              onClick={() => model.available && onModelChange(model.id)}
-              disabled={!model.available}
-              className={cn(
-                "flex items-start gap-3 p-3 cursor-pointer",
-                !model.available && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <span className="text-xl mt-0.5">{model.icon}</span>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{model.name}</span>
-                  {model.id === selectedModelId && model.available && (
-                    <Check className="h-4 w-4 text-primary" />
-                  )}
-                  {model.comingSoon && (
-                    <Badge variant="secondary" className="px-1.5 py-0 text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Coming Soon
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {model.description}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs px-1.5 py-0">
-                    {model.category}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    Max {model.maxTokens} tokens
-                  </span>
+
+            {/* Footer */}
+            <div className="flex-shrink-0">
+              <DropdownMenuSeparator />
+              <div className="p-2 text-xs text-muted-foreground bg-background">
+                <div className="flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 flex-shrink-0" />
+                  <span className="break-words">jetXA is currently the only active model</span>
                 </div>
               </div>
-            </DropdownMenuItem>
-          ))}
-          
-          <DropdownMenuSeparator />
-          <div className="p-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Sparkles className="h-3 w-3" />
-              <span>jetXA is currently the only active model</span>
             </div>
           </div>
         </DropdownMenuContent>

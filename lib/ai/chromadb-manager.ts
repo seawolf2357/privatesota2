@@ -137,12 +137,12 @@ export class ChromaDBManager {
           },
           get: async (params: any) => {
             const { ids } = params;
-            const results = ids.map((id: string) => mockData.get(id)).filter(Boolean);
+            const results = ids.map((id: string) => mockData.get(id)).filter(Boolean) as ChromaDocument[];
             return {
-              ids: [results.map(r => r!.id)],
-              embeddings: [results.map(r => r!.embedding || [])],
-              documents: [results.map(r => r!.document || '')],
-              metadatas: [results.map(r => r!.metadata || {})]
+              ids: [results.map((r: ChromaDocument) => r.id)],
+              embeddings: [results.map((r: ChromaDocument) => r.embedding || [])],
+              documents: [results.map((r: ChromaDocument) => r.document || '')],
+              metadatas: [results.map((r: ChromaDocument) => r.metadata || {})]
             };
           },
           count: async () => mockData.size

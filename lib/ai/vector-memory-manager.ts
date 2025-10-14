@@ -11,16 +11,24 @@ export interface VectorSearchResult {
 }
 
 export class VectorMemoryManager {
-  private chroma: ChromaClient;
+  private chroma: ChromaClient | null = null;
   private openai: OpenAI;
   private collectionName = 'user_memories';
   private collection: any = null;
+  private isChromaAvailable = false;
 
   constructor(openaiApiKey?: string) {
-    // Initialize ChromaDB client
-    this.chroma = new ChromaClient({
-      path: process.env.CHROMA_URL || 'http://localhost:8000'
-    });
+    // Try to initialize ChromaDB client (optional)
+    try {
+      this.chroma = new ChromaClient({
+        path: process.env.CHROMA_URL || 'http://localhost:8000'
+      });
+      this.isChromaAvailable = true;
+      console.log('[VectorMemory] ChromaDB client initialized');
+    } catch (error) {
+      console.log('[VectorMemory] ChromaDB not available, vector search disabled');
+      this.chroma = null;
+    }
 
     // Initialize OpenAI for embeddings
     this.openai = new OpenAI({
@@ -30,17 +38,22 @@ export class VectorMemoryManager {
 
   // Initialize or get collection
   async initializeCollection(userId: string) {
+    if (!this.chroma || !this.isChromaAvailable) {
+      console.log('[VectorMemory] ChromaDB not available, skipping collection initialization');
+      return null;
+    }
+
     try {
       const collectionName = `memories_${userId.replace(/-/g, '_')}`;
 
       // Try to get existing collection
       try {
-        this.collection = await this.chroma.getCollection({
+        this.collection = await (this.chroma as any).getCollection({
           name: collectionName
         });
       } catch (error) {
         // Create new collection if it doesn't exist
-        this.collection = await this.chroma.createCollection({
+        this.collection = await (this.chroma as any).createCollection({
           name: collectionName,
           metadata: { userId }
         });
@@ -48,8 +61,10 @@ export class VectorMemoryManager {
 
       return this.collection;
     } catch (error) {
-      console.error('[VectorMemory] Error initializing collection:', error);
-      throw error;
+      console.log('[VectorMemory] ChromaDB connection failed, disabling vector search');
+      this.isChromaAvailable = false;
+      this.chroma = null;
+      return null;
     }
   }
 
@@ -88,9 +103,17 @@ export class VectorMemoryManager {
 
   // Add memory to vector database
   async addMemory(memory: UserMemory, userId: string): Promise<void> {
+    if (!this.isChromaAvailable) {
+      return; // Silently skip if ChromaDB not available
+    }
+
     try {
       if (!this.collection) {
         await this.initializeCollection(userId);
+      }
+
+      if (!this.collection) {
+        return; // Collection initialization failed
       }
 
       const embedding = await this.generateEmbedding(memory.content);
@@ -110,7 +133,7 @@ export class VectorMemoryManager {
 
       console.log(`[VectorMemory] Added memory ${memory.id} to vector DB`);
     } catch (error) {
-      console.error('[VectorMemory] Error adding memory:', error);
+      console.log('[VectorMemory] Skipping vector storage (ChromaDB unavailable)');
     }
   }
 
@@ -159,9 +182,17 @@ export class VectorMemoryManager {
     limit: number = 5,
     minSimilarity: number = 0.7
   ): Promise<VectorSearchResult[]> {
+    if (!this.isChromaAvailable) {
+      return []; // Return empty array if ChromaDB not available
+    }
+
     try {
       if (!this.collection) {
         await this.initializeCollection(userId);
+      }
+
+      if (!this.collection) {
+        return []; // Collection initialization failed
       }
 
       const queryEmbedding = await this.generateEmbedding(query);
@@ -194,7 +225,7 @@ export class VectorMemoryManager {
 
       return formattedResults.sort((a, b) => b.similarity - a.similarity);
     } catch (error) {
-      console.error('[VectorMemory] Error searching memories:', error);
+      console.log('[VectorMemory] Search skipped (ChromaDB unavailable)');
       return [];
     }
   }

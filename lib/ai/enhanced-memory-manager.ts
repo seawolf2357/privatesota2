@@ -198,9 +198,9 @@ export class EnhancedMemoryManager {
     }
 
     // Determine action
-    let action: 'save' | 'defer' | 'skip' = 'skip';
+    let action: 'process' | 'defer' | 'skip' = 'skip';
     if (importance >= 0.7) {
-      action = 'save';
+      action = 'process';
     } else if (importance >= 0.4) {
       action = 'defer';
     }
@@ -221,7 +221,14 @@ export class EnhancedMemoryManager {
       importance: Math.min(1.0, importance),
       action,
       suggestedCategory,
-      reasoning: reasons.join(', ')
+      dimensions: {
+        personalInfo: 0,
+        preferences: 0,
+        relationships: 0,
+        skills: 0,
+        experiences: 0,
+        goals: 0
+      }
     };
   }
 

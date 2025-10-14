@@ -1,10 +1,11 @@
-v0.2.1 20251013 1819
+v0.2.1 20251014 1143
   - merge privatesota2_bak to Privatesota2
   - add shopping api
     - use firework api.
     - add product image not shown in ai web.
       - modify time line change and radio button. 
       - modify category
+      - restore model panel scroll.
 v0.2 20250905 1804
   - build success. pnpm
   - add supabase.

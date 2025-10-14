@@ -129,7 +129,7 @@ ${conversationText}`;
 
   // Save or update a memory
   async saveMemory(
-    category: MemoryCategory,
+    category: string, // Accept any string, validate later
     content: string,
     confidence: number = 1.0,
     sourceSessionId?: string
@@ -142,7 +142,7 @@ ${conversationText}`;
         .where(
           and(
             eq(userMemory.userId, this.userId),
-            eq(userMemory.category, category)
+            eq(userMemory.category, category as any)
           )
         )
         .orderBy(desc(userMemory.updatedAt));

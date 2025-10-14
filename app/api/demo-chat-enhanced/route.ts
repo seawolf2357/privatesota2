@@ -575,7 +575,7 @@ Important:
     if (shoppingContext && detectedLanguage === 'ko') {
       // Add personalized shopping instructions for Korean users
       if (detectedMood) {
-        const moodMessages = {
+        const moodMessages: Record<string, string> = {
           '스트레스': '\n힘든 하루였군요. 달콤한 간식으로 기분을 풀어보세요!',
           '피곤': '\n피곤하시네요. 에너지를 충전할 수 있는 제품들이에요.',
           '우울': '\n마음이 힘드신가요? 행복한 맛으로 기분을 달래보세요.',
