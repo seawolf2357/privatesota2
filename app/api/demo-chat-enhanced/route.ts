@@ -6,6 +6,7 @@ import type { Message as MemoryMessage, UserMemory } from '@/lib/ai/types';
 import { DEMO_USER_ID } from '@/lib/constants/demo-user';
 import { getShoppingAPIClient } from '@/lib/api/shopping-api';
 import { getVectorMemoryManager } from '@/lib/ai/vector-memory-manager';
+import { getModelById } from '@/lib/ai/models-config';
 
 // Use environment variables for Friendli AI
 const FRIENDLI_API_KEY = process.env.FRIENDLI_API_KEY || '';
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
     const json = await request.json();
     const {
       message,
+      selectedModelId = 'jetxa-model',
       webSearchEnabled = false,
       userId = DEMO_USER_ID,
       sessionId,
@@ -83,6 +85,7 @@ export async function POST(request: Request) {
 
     console.log('Enhanced demo chat request:', {
       message: message.content.substring(0, 100),
+      selectedModelId,
       webSearchEnabled,
       includeMemories
     });
@@ -284,27 +287,34 @@ export async function POST(request: Request) {
     
     // Debug: Log detected language
     console.log(`[Language Detection] Input: "${message.content.substring(0, 50)}" → Detected: ${detectedLanguage}`);
-    
-    // Generate system prompt based on detected language
-    function getSystemPrompt(language: string): string {
+
+    // Get selected model configuration
+    const selectedModel = getModelById(selectedModelId);
+    console.log('\n🎯 [Demo Chat API] Selected Model:', {
+      id: selectedModelId,
+      name: selectedModel?.name || 'Unknown',
+      category: selectedModel?.category || 'Unknown',
+      hasPersona: !!selectedModel?.persona,
+    });
+
+    // Generate system prompt based on detected language and selected model
+    function getSystemPrompt(language: string, modelId: string): string {
+      // Get model persona or use default
+      const model = getModelById(modelId);
+      const modelPersona = model?.persona || 'You are an advanced AI assistant.';
+
       const basePrompt = {
-        ko: `당신의 이름은 jetXA입니다. 전 세계 언어를 유창하게 구사하는 고급 AI 어시스턴트입니다.
+        ko: `${modelPersona}
 
 ${timeInfo}
 
-주요 특징:
-- 이름: jetXA (제트엑스에이)
-- 역할: 고급 멀티모달 AI 어시스턴트
-- 성격: 전문적이고 정확하며, 친근한 대화 가능
-- 특기: 이미지 분석, 문서 처리, 데이터 분석, 다국어 대화, 웹 검색, 메모리 관리
-
-기능:
-1. 업로드된 이미지를 분석하고 설명할 수 있음
-2. PDF, CSV, TXT 등 다양한 파일 형식 처리
-3. 파일 내용을 기반으로 질문에 답변
-4. 모든 언어로 자연스러운 대화
-5. 웹 검색을 통한 최신 정보 제공
-6. 사용자 정보 기억 및 개인화된 대화
+추가 기능:
+- 업로드된 이미지를 분석하고 설명할 수 있음
+- PDF, CSV, TXT 등 다양한 파일 형식 처리
+- 파일 내용을 기반으로 질문에 답변
+- 모든 언어로 자연스러운 대화
+- 웹 검색을 통한 최신 정보 제공
+- 사용자 정보 기억 및 개인화된 대화
 ${memoriesContext}
 
 **매우 중요한 언어 규칙:**
@@ -320,23 +330,17 @@ ${memoriesContext}
 - 기억된 정보를 활용하여 더 개인화된 답변을 제공하세요.
 - 모든 응답은 반드시 한국어로 작성하세요.`,
 
-        en: `Your name is jetXA. You are an advanced multilingual AI assistant fluent in all world languages.
+        en: `${modelPersona}
 
 ${timeInfo}
 
-Key Features:
-- Name: jetXA
-- Role: Advanced multimodal AI assistant
-- Personality: Professional, accurate, and friendly conversational style
-- Specialties: Image analysis, document processing, data analysis, multilingual conversation, web search, memory management
-
-Functions:
-1. Analyze and describe uploaded images
-2. Process various file formats including PDF, CSV, TXT
-3. Answer questions based on file content
-4. Natural conversation in any language
-5. Provide latest information through web search
-6. Remember user information for personalized conversations
+Additional Functions:
+- Analyze and describe uploaded images
+- Process various file formats including PDF, CSV, TXT
+- Answer questions based on file content
+- Natural conversation in any language
+- Provide latest information through web search
+- Remember user information for personalized conversations
 ${memoriesContext}
 
 Important Language Rules:
@@ -350,77 +354,87 @@ Important:
 - Use remembered information to provide more personalized responses.`,
 
         // Add support for other major languages
-        ja: `あなたの名前はjetXAです。世界中の言語に堪能な高度なAIアシスタントです。
+        ja: `${modelPersona}
 
 ${timeInfo}
+
+追加機能:
+- 画像分析、文書処理、多言語対話、ウェブ検索、メモリ管理
+${memoriesContext}
 
 重要な言語ルール:
 - 重要: 常にユーザーの入力と同じ言語で応答してください
 - ユーザーの言語を検出し、その言語のみで応答してください
 - 応答全体を通して一貫した言語を維持してください
 
-主な機能: 画像分析、文書処理、多言語対話、ウェブ検索、メモリ管理
-
 重要:
 - ユーザーの言語で応答する
 - ウェブソースを[出典: 番号]形式で引用する
 - 記憶された情報を個人化に活用する`,
 
-        zh: `您的名字是jetXA。您是一位精通世界各国语言的高级AI助手。
+        zh: `${modelPersona}
 
 ${timeInfo}
+
+追加功能:
+- 图像分析、文档处理、多语言对话、网络搜索、记忆管理
+${memoriesContext}
 
 重要的语言规则:
 - 关键: 始终用与用户输入相同的语言回应
 - 检测用户的语言并仅用该语言回应
 - 在整个回应中保持一致的语言
 
-主要能力: 图像分析、文档处理、多语言对话、网络搜索、记忆管理
-
 重要提示:
 - 用用户的语言回应
 - 以[来源: 数字]格式引用网络来源
 - 使用记忆信息进行个性化`,
 
-        es: `Tu nombre es jetXA. Eres un asistente de IA avanzado multilingüe fluido en todos los idiomas del mundo.
+        es: `${modelPersona}
 
 ${timeInfo}
+
+Funciones adicionales:
+- Análisis de imágenes, procesamiento de documentos, conversación multilingüe, búsqueda web, gestión de memoria
+${memoriesContext}
 
 Reglas importantes de idioma:
 - CRÍTICO: Siempre responde en el MISMO IDIOMA que la entrada del usuario
 - Detecta el idioma del usuario y responde SOLO en ese idioma
 - Mantén un idioma consistente en toda tu respuesta
 
-Habilidades principales: Análisis de imágenes, procesamiento de documentos, conversación multilingüe, búsqueda web, gestión de memoria
-
 Importante:
 - Responde en el idioma del usuario
 - Cita fuentes web como [Fuente: número]
 - Usa información recordada para personalización`,
 
-        fr: `Votre nom est jetXA. Vous êtes un assistant IA avancé multilingue maîtrisant toutes les langues du monde.
+        fr: `${modelPersona}
 
 ${timeInfo}
+
+Fonctions supplémentaires:
+- Analyse d'images, traitement de documents, conversation multilingue, recherche web, gestion de mémoire
+${memoriesContext}
 
 Règles linguistiques importantes:
 - CRITIQUE: Répondez toujours dans la MÊME LANGUE que l'entrée de l'utilisateur
 - Détectez la langue de l'utilisateur et répondez UNIQUEMENT dans cette langue
 - Maintenez une langue cohérente tout au long de votre réponse
 
-Capacités principales: Analyse d'images, traitement de documents, conversation multilingue, recherche web, gestion de mémoire
-
 Important:
 - Répondre dans la langue de l'utilisateur
 - Citer les sources web comme [Source: numéro]
 - Utiliser les informations mémorisées pour la personnalisation`,
 
-        default: `Your name is jetXA. You are an advanced multilingual AI assistant.
+        default: `${modelPersona}
 
 ${timeInfo}
 
-CRITICAL: Always respond in the SAME LANGUAGE as the user's input. Detect their language and maintain it throughout your response.
+Additional capabilities:
+- Image analysis, document processing, multilingual conversation, web search, memory management
+${memoriesContext}
 
-Key abilities: Image analysis, document processing, multilingual conversation, web search, memory management.
+CRITICAL: Always respond in the SAME LANGUAGE as the user's input. Detect their language and maintain it throughout your response.
 
 Important:
 - Respond in the user's language
@@ -431,9 +445,11 @@ Important:
       return basePrompt[language as keyof typeof basePrompt] || basePrompt.default;
     }
 
-    // Base system prompt with language detection  
-    let systemPrompt = getSystemPrompt(detectedLanguage);
+    // Base system prompt with language detection and model persona
+    let systemPrompt = getSystemPrompt(detectedLanguage, selectedModelId);
+    const promptPreview = systemPrompt.substring(0, 200);
     console.log(`[System Prompt] Using prompt for language: ${detectedLanguage}`);
+    console.log(`📝 [Demo Chat API] System Prompt Preview:`, promptPreview + '...\n');
 
     // Add memories if enabled
     if (includeMemories && userId) {

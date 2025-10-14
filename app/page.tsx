@@ -144,6 +144,7 @@ export default function MainPage() {
           message: {
             content: messageWithContext,
           },
+          selectedModelId,
           webSearchEnabled,
           userId: userId,
           sessionId,

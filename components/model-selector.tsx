@@ -35,9 +35,6 @@ export function ModelSelector({ selectedModelId, onModelChange, className }: Mod
             <div className="flex items-center gap-2">
               <span className="text-lg">{selectedModel.icon}</span>
               <span className="font-medium">{selectedModel.name}</span>
-              {selectedModel.id === 'jetxa-model' && (
-                <Badge variant="default" className="ml-1 px-1 py-0 text-xs">Active</Badge>
-              )}
             </div>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
@@ -123,7 +120,7 @@ export function ModelSelector({ selectedModelId, onModelChange, className }: Mod
               <div className="p-2 text-xs text-muted-foreground bg-background">
                 <div className="flex items-center gap-1">
                   <Sparkles className="h-3 w-3 flex-shrink-0" />
-                  <span className="break-words">jetXA is currently the only active model</span>
+                  <span className="break-words">Select a model that best fits your task</span>
                 </div>
               </div>
             </div>

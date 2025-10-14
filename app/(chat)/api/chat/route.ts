@@ -132,9 +132,20 @@ export async function POST(request: Request) {
       city,
       country,
     };
-    
-    // Use Yuri when Friendli or Fireworks is enabled
-    const useYuri = process.env.USE_FRIENDLI === 'true' || process.env.USE_FIREWORKS === 'true';
+
+    // Debug: Log selected model and persona
+    const { getModelById } = await import('@/lib/ai/models-config');
+    const selectedModel = getModelById(selectedChatModel);
+    console.log('\n🎯 [Chat API] Selected Model:', {
+      id: selectedChatModel,
+      name: selectedModel?.name || 'Unknown',
+      category: selectedModel?.category || 'Unknown',
+      hasPersona: !!selectedModel?.persona,
+    });
+
+    const generatedPrompt = systemPrompt({ selectedChatModel, requestHints });
+    const promptPreview = generatedPrompt.substring(0, 200);
+    console.log('📝 [Chat API] System Prompt Preview:', promptPreview + '...\n');
 
     await saveMessages({
       messages: [
@@ -191,7 +202,7 @@ export async function POST(request: Request) {
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints, useYuri }),
+          system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(processedMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:

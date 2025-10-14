@@ -80,16 +80,18 @@ About the origin of user's request:
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
-  useYuri = false,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
-  useYuri?: boolean;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
-  const basePrompt = useYuri || process.env.USE_FRIENDLI === 'true' || process.env.USE_FIREWORKS === 'true' 
-    ? yuriSystemPrompt 
-    : regularPrompt;
+
+  // Import model configuration to get persona
+  const { getModelById } = require('./models-config');
+  const selectedModel = getModelById(selectedChatModel);
+
+  // Use model-specific persona if available, otherwise use default
+  const basePrompt = selectedModel?.persona || regularPrompt;
 
   if (selectedChatModel === 'chat-model-reasoning') {
     return `${basePrompt}\n\n${requestPrompt}`;

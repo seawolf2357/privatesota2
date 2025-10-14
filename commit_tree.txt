@@ -6,6 +6,7 @@ v0.2.1 20251014 1143
       - modify time line change and radio button. 
       - modify category
       - restore model panel scroll.
+        - adj. each model
 v0.2 20250905 1804
   - build success. pnpm
   - add supabase.
