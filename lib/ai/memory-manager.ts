@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { userMemory, chat, message, type UserMemory } from '@/lib/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { myFriendliProvider } from './providers-friendli';
+import { getVectorMemoryManager } from './vector-memory-manager';
 
 export type MemoryCategory =
   | 'personal_info'

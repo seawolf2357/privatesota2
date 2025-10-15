@@ -134,7 +134,7 @@ export async function POST(request: Request) {
 
           // Try vector search for related memories
           try {
-            const vectorManager = getVectorMemoryManager(process.env.OPENAI_API_KEY);
+            const vectorManager = getVectorMemoryManager();
             relatedMemoriesContext = await vectorManager.getRelatedMemories(
               message.content,
               userId,
