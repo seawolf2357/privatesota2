@@ -1,6 +1,8 @@
+/* eslint-disable import/no-unresolved */
 /**
  * ChromaDB Manager - Vector database integration for memory storage
  * Note: ChromaDB requires a running ChromaDB server
+ * DEPRECATED: Use vector-memory-manager.ts with pgvector instead
  */
 
 import {
