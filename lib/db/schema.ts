@@ -9,7 +9,25 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  customType,
 } from 'drizzle-orm/pg-core';
+
+// Custom type for pgvector
+const vector = customType<{
+  data: number[];
+  driverData: string;
+  config: { dimensions: number };
+}>({
+  dataType(config) {
+    return `vector(${config?.dimensions ?? 1536})`;
+  },
+  toDriver(value: number[]): string {
+    return JSON.stringify(value);
+  },
+  fromDriver(value: string): number[] {
+    return JSON.parse(value);
+  },
+});
 
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
@@ -189,6 +207,7 @@ export const userMemory = pgTable('UserMemory', {
     extractedFrom?: string;
     language?: string;
   }>(),
+  embedding: vector({ dimensions: 1536 }), // OpenAI text-embedding-3-small dimensions
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
   sourceSessionId: uuid('sourceSessionId').references(() => chat.id),

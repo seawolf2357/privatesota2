@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       }
       groupedMemories[category].push({
         id: memory.id,
+        category: category, // Add category field for frontend
         content: memory.content,
         confidence: memory.confidence,
         metadata: memory.metadata,

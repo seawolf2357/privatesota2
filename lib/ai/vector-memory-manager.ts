@@ -1,6 +1,9 @@
-import { ChromaClient } from 'chromadb';
-import OpenAI from 'openai';
-import { UserMemory } from '../db/schema';
+import { pipeline, Pipeline } from '@xenova/transformers';
+import { db } from '@/lib/db';
+import { userMemory } from '@/lib/db/schema';
+import { eq, sql } from 'drizzle-orm';
+import type { UserMemory } from '@/lib/db/schema';
+import crypto from 'crypto';
 
 export interface VectorSearchResult {
   id: string;
@@ -11,258 +14,206 @@ export interface VectorSearchResult {
 }
 
 export class VectorMemoryManager {
-  private chroma: ChromaClient | null = null;
-  private openai: OpenAI;
-  private collectionName = 'user_memories';
-  private collection: any = null;
-  private isChromaAvailable = false;
+  private embeddingPipeline: Pipeline | null = null;
+  private isInitialized = false;
+  private initPromise: Promise<void> | null = null;
+  private embeddingCache: Map<string, number[]> = new Map();
+  private readonly CACHE_SIZE = 10000;
+  private readonly EMBEDDING_DIM = 384;
 
-  constructor(openaiApiKey?: string) {
-    // Try to initialize ChromaDB client (optional)
-    try {
-      this.chroma = new ChromaClient({
-        path: process.env.CHROMA_URL || 'http://localhost:8000'
-      });
-      this.isChromaAvailable = true;
-      console.log('[VectorMemory] ChromaDB client initialized');
-    } catch (error) {
-      console.log('[VectorMemory] ChromaDB not available, vector search disabled');
-      this.chroma = null;
-    }
-
-    // Initialize OpenAI for embeddings
-    this.openai = new OpenAI({
-      apiKey: openaiApiKey || process.env.OPENAI_API_KEY || ''
-    });
+  constructor() {
+    // Initialize model lazily
+    this.initPromise = this.initializeModel();
   }
 
-  // Initialize or get collection
-  async initializeCollection(userId: string) {
-    if (!this.chroma || !this.isChromaAvailable) {
-      console.log('[VectorMemory] ChromaDB not available, skipping collection initialization');
-      return null;
-    }
+  // Initialize the embedding model
+  private async initializeModel(): Promise<void> {
+    if (this.isInitialized) return;
 
     try {
-      const collectionName = `memories_${userId.replace(/-/g, '_')}`;
+      console.log('[VectorMemory] Loading local embedding model...');
 
-      // Try to get existing collection
-      try {
-        this.collection = await (this.chroma as any).getCollection({
-          name: collectionName
-        });
-      } catch (error) {
-        // Create new collection if it doesn't exist
-        this.collection = await (this.chroma as any).createCollection({
-          name: collectionName,
-          metadata: { userId }
-        });
-      }
+      // Use the same model as Discord bot
+      // paraphrase-multilingual-MiniLM-L12-v2 (384 dimensions, multilingual)
+      this.embeddingPipeline = await pipeline(
+        'feature-extraction',
+        'Xenova/paraphrase-multilingual-MiniLM-L12-v2',
+        {
+          revision: 'main',
+          quantized: true, // Use quantized version for smaller size
+        }
+      );
 
-      return this.collection;
+      this.isInitialized = true;
+      console.log('[VectorMemory] Local embedding model loaded successfully');
     } catch (error) {
-      console.log('[VectorMemory] ChromaDB connection failed, disabling vector search');
-      this.isChromaAvailable = false;
-      this.chroma = null;
-      return null;
+      console.error('[VectorMemory] Error loading embedding model:', error);
+      console.log('[VectorMemory] Will use fallback hash-based embeddings');
+      this.embeddingPipeline = null;
+      this.isInitialized = true;
     }
   }
 
-  // Generate embeddings using OpenAI
+  // Generate embeddings using local model
   async generateEmbedding(text: string): Promise<number[]> {
-    try {
-      const response = await this.openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: text
-      });
-
-      return response.data[0].embedding;
-    } catch (error) {
-      console.error('[VectorMemory] Error generating embedding:', error);
-
-      // Fallback to simple hash-based pseudo-embedding if OpenAI fails
-      return this.generateFallbackEmbedding(text);
+    // Ensure model is initialized
+    if (!this.isInitialized && this.initPromise) {
+      await this.initPromise;
     }
+
+    // Check cache first
+    if (this.embeddingCache.has(text)) {
+      return this.embeddingCache.get(text)!;
+    }
+
+    let embedding: number[];
+
+    if (this.embeddingPipeline) {
+      try {
+        // Generate embedding using Transformers.js
+        const output = await this.embeddingPipeline(text, {
+          pooling: 'mean',
+          normalize: true,
+        });
+
+        // Convert to array
+        embedding = Array.from(output.data);
+
+        console.log(`[VectorMemory] Generated embedding (${embedding.length}D) for text: "${text.substring(0, 50)}..."`);
+      } catch (error) {
+        console.error('[VectorMemory] Error generating embedding, using fallback:', error);
+        embedding = this.generateFallbackEmbedding(text);
+      }
+    } else {
+      // Use fallback hash-based embedding
+      embedding = this.generateFallbackEmbedding(text);
+    }
+
+    // Cache the embedding
+    if (this.embeddingCache.size < this.CACHE_SIZE) {
+      this.embeddingCache.set(text, embedding);
+    }
+
+    return embedding;
   }
 
-  // Simple fallback embedding (for testing without OpenAI)
+  // Fallback hash-based embedding (same as Discord bot)
   private generateFallbackEmbedding(text: string): number[] {
-    const embedding = new Array(1536).fill(0);
+    const hash = crypto.createHash('sha256').update(text).digest();
+    const embedding: number[] = [];
 
-    // Simple hash-based embedding
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.charCodeAt(i);
-      const index = (charCode * 7 + i * 13) % 1536;
-      embedding[index] = Math.sin(charCode * i) * 0.5 + 0.5;
+    for (let i = 0; i < Math.min(hash.length, this.EMBEDDING_DIM); i++) {
+      embedding.push((hash[i] - 128) / 128.0);
     }
 
-    // Normalize
-    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return embedding.map(val => val / magnitude);
+    // Pad to correct dimension
+    while (embedding.length < this.EMBEDDING_DIM) {
+      embedding.push(0.0);
+    }
+
+    return embedding.slice(0, this.EMBEDDING_DIM);
   }
 
   // Add memory to vector database
   async addMemory(memory: UserMemory, userId: string): Promise<void> {
-    if (!this.isChromaAvailable) {
-      return; // Silently skip if ChromaDB not available
-    }
-
     try {
-      if (!this.collection) {
-        await this.initializeCollection(userId);
-      }
-
-      if (!this.collection) {
-        return; // Collection initialization failed
-      }
-
       const embedding = await this.generateEmbedding(memory.content);
 
-      await this.collection.add({
-        ids: [memory.id],
-        embeddings: [embedding],
-        metadatas: [{
-          category: memory.category,
-          confidence: memory.confidence,
-          createdAt: memory.createdAt.toISOString(),
-          updatedAt: memory.updatedAt.toISOString(),
-          ...memory.metadata
-        }],
-        documents: [memory.content]
-      });
+      // Update the memory with embedding using raw SQL for vector type
+      await db.execute(sql`
+        UPDATE "UserMemory"
+        SET embedding = ${JSON.stringify(embedding)}::vector
+        WHERE id = ${memory.id}
+      `);
 
-      console.log(`[VectorMemory] Added memory ${memory.id} to vector DB`);
+      console.log(`[VectorMemory] Added embedding for memory ${memory.id}`);
     } catch (error) {
-      console.log('[VectorMemory] Skipping vector storage (ChromaDB unavailable)');
+      console.error('[VectorMemory] Error adding memory embedding:', error);
     }
   }
 
-  // Batch add memories
+  // Batch add embeddings for existing memories
   async addMemories(memories: UserMemory[], userId: string): Promise<void> {
     try {
-      if (!this.collection) {
-        await this.initializeCollection(userId);
+      console.log(`[VectorMemory] Generating embeddings for ${memories.length} memories...`);
+
+      for (const memory of memories) {
+        await this.addMemory(memory, userId);
       }
 
-      if (memories.length === 0) return;
-
-      // Generate embeddings for all memories
-      const embeddings = await Promise.all(
-        memories.map(m => this.generateEmbedding(m.content))
-      );
-
-      // Prepare batch data
-      const ids = memories.map(m => m.id);
-      const documents = memories.map(m => m.content);
-      const metadatas = memories.map(m => ({
-        category: m.category,
-        confidence: m.confidence,
-        createdAt: m.createdAt.toISOString(),
-        updatedAt: m.updatedAt.toISOString(),
-        ...m.metadata
-      }));
-
-      await this.collection.add({
-        ids,
-        embeddings,
-        metadatas,
-        documents
-      });
-
-      console.log(`[VectorMemory] Added ${memories.length} memories to vector DB`);
+      console.log(`[VectorMemory] Added embeddings for ${memories.length} memories`);
     } catch (error) {
       console.error('[VectorMemory] Error batch adding memories:', error);
     }
   }
 
-  // Search similar memories
+  // Search similar memories using pgvector cosine similarity
   async searchSimilarMemories(
     query: string,
     userId: string,
     limit: number = 5,
     minSimilarity: number = 0.7
   ): Promise<VectorSearchResult[]> {
-    if (!this.isChromaAvailable) {
-      return []; // Return empty array if ChromaDB not available
-    }
-
     try {
-      if (!this.collection) {
-        await this.initializeCollection(userId);
-      }
-
-      if (!this.collection) {
-        return []; // Collection initialization failed
-      }
-
       const queryEmbedding = await this.generateEmbedding(query);
 
-      const results = await this.collection.query({
-        queryEmbeddings: [queryEmbedding],
-        nResults: limit
-      });
+      // Use pgvector's cosine distance operator (<=>)
+      // Cosine similarity = 1 - cosine distance
+      const results = await db.execute(sql`
+        SELECT
+          id,
+          content,
+          category,
+          metadata,
+          1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
+        FROM "UserMemory"
+        WHERE
+          "userId" = ${userId}
+          AND embedding IS NOT NULL
+          AND 1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) >= ${minSimilarity}
+        ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+        LIMIT ${limit}
+      `) as any[];
 
-      if (!results.documents || results.documents.length === 0) {
-        return [];
-      }
+      const formattedResults: VectorSearchResult[] = results.map((row: any) => ({
+        id: row.id,
+        content: row.content,
+        category: row.category,
+        similarity: parseFloat(row.similarity),
+        metadata: row.metadata,
+      }));
 
-      // Format results
-      const formattedResults: VectorSearchResult[] = [];
+      console.log(`[VectorMemory] Found ${formattedResults.length} similar memories (min similarity: ${minSimilarity})`);
 
-      for (let i = 0; i < results.ids[0].length; i++) {
-        const similarity = results.distances ? 1 - results.distances[0][i] : 0;
-
-        if (similarity >= minSimilarity) {
-          formattedResults.push({
-            id: results.ids[0][i],
-            content: results.documents[0][i] || '',
-            category: results.metadatas[0][i]?.category || 'general',
-            similarity,
-            metadata: results.metadatas[0][i]
-          });
-        }
-      }
-
-      return formattedResults.sort((a, b) => b.similarity - a.similarity);
+      return formattedResults;
     } catch (error) {
-      console.log('[VectorMemory] Search skipped (ChromaDB unavailable)');
+      console.error('[VectorMemory] Error searching similar memories:', error);
       return [];
     }
   }
 
-  // Update memory in vector database
+  // Update memory embedding in database
   async updateMemory(memory: UserMemory, userId: string): Promise<void> {
     try {
-      if (!this.collection) {
-        await this.initializeCollection(userId);
-      }
+      const embedding = await this.generateEmbedding(memory.content);
 
-      // Delete old version
-      await this.collection.delete({
-        ids: [memory.id]
-      });
+      await db.execute(sql`
+        UPDATE "UserMemory"
+        SET embedding = ${JSON.stringify(embedding)}::vector
+        WHERE id = ${memory.id}
+      `);
 
-      // Add updated version
-      await this.addMemory(memory, userId);
-
-      console.log(`[VectorMemory] Updated memory ${memory.id} in vector DB`);
+      console.log(`[VectorMemory] Updated embedding for memory ${memory.id}`);
     } catch (error) {
-      console.error('[VectorMemory] Error updating memory:', error);
+      console.error('[VectorMemory] Error updating memory embedding:', error);
     }
   }
 
-  // Delete memory from vector database
+  // Delete memory (no need to delete embedding separately, CASCADE will handle it)
   async deleteMemory(memoryId: string, userId: string): Promise<void> {
     try {
-      if (!this.collection) {
-        await this.initializeCollection(userId);
-      }
-
-      await this.collection.delete({
-        ids: [memoryId]
-      });
-
-      console.log(`[VectorMemory] Deleted memory ${memoryId} from vector DB`);
+      await db.delete(userMemory).where(eq(userMemory.id, memoryId));
+      console.log(`[VectorMemory] Deleted memory ${memoryId}`);
     } catch (error) {
       console.error('[VectorMemory] Error deleting memory:', error);
     }
@@ -287,14 +238,63 @@ export class VectorMemoryManager {
 
     return context;
   }
+
+  // Backfill embeddings for existing memories without embeddings
+  async backfillEmbeddings(userId: string): Promise<number> {
+    try {
+      // Find memories without embeddings
+      const memoriesWithoutEmbeddings = await db.execute(sql`
+        SELECT id, content, category
+        FROM "UserMemory"
+        WHERE "userId" = ${userId}
+        AND embedding IS NULL
+      `) as any[];
+
+      const count = memoriesWithoutEmbeddings.length;
+
+      if (count === 0) {
+        console.log('[VectorMemory] No memories need backfilling');
+        return 0;
+      }
+
+      console.log(`[VectorMemory] Backfilling embeddings for ${count} memories...`);
+
+      for (const row of memoriesWithoutEmbeddings) {
+        const embedding = await this.generateEmbedding(row.content as string);
+
+        await db.execute(sql`
+          UPDATE "UserMemory"
+          SET embedding = ${JSON.stringify(embedding)}::vector
+          WHERE id = ${row.id}
+        `);
+      }
+
+      console.log(`[VectorMemory] Backfilled ${count} embeddings`);
+      return count;
+    } catch (error) {
+      console.error('[VectorMemory] Error backfilling embeddings:', error);
+      return 0;
+    }
+  }
+
+  // Check if vector search is available
+  isVectorSearchAvailable(): boolean {
+    return this.isInitialized;
+  }
+
+  // Clear embedding cache
+  clearCache(): void {
+    this.embeddingCache.clear();
+    console.log('[VectorMemory] Embedding cache cleared');
+  }
 }
 
 // Singleton instance
 let vectorMemoryManager: VectorMemoryManager | null = null;
 
-export function getVectorMemoryManager(openaiApiKey?: string): VectorMemoryManager {
+export function getVectorMemoryManager(): VectorMemoryManager {
   if (!vectorMemoryManager) {
-    vectorMemoryManager = new VectorMemoryManager(openaiApiKey);
+    vectorMemoryManager = new VectorMemoryManager();
   }
   return vectorMemoryManager;
 }

@@ -150,7 +150,7 @@ export class EnhancedMemoryManager {
   }
 
   /**
-   * Analyze message importance
+   * Analyze message importance with Korean language support
    */
   private async analyzeImportance(message: Message, userId: string): Promise<ImportanceAnalysis> {
     const content = message.content.toLowerCase();
@@ -163,11 +163,17 @@ export class EnhancedMemoryManager {
       reasons.push('longer message');
     }
 
-    // Keyword-based scoring
+    // Keyword-based scoring (English + Korean)
     const importantKeywords = [
+      // English
       'remember', 'important', 'note', 'preference', 'like', 'dislike',
       'name', 'birthday', 'address', 'phone', 'email', 'job', 'work',
-      'family', 'hobby', 'goal', 'plan', 'health', 'medical'
+      'family', 'hobby', 'goal', 'plan', 'health', 'medical',
+      // Korean
+      '기억', '중요', '메모', '좋아', '싫어', '선호',
+      '이름', '나이', '생일', '주소', '전화', '이메일', '직업', '직장', '회사',
+      '가족', '취미', '목표', '계획', '건강', '의료',
+      '살고', '사는', '거주', '서울', '부산'
     ];
 
     const foundKeywords = importantKeywords.filter(keyword => content.includes(keyword));
@@ -176,20 +182,35 @@ export class EnhancedMemoryManager {
       reasons.push(`contains keywords: ${foundKeywords.join(', ')}`);
     }
 
-    // Question detection
-    if (content.includes('?') || content.startsWith('what') || content.startsWith('how') || content.startsWith('when')) {
+    // Question detection (English + Korean)
+    if (content.includes('?') ||
+        content.startsWith('what') || content.startsWith('how') || content.startsWith('when') ||
+        content.includes('뭐') || content.includes('어떻') || content.includes('언제') || content.includes('어디')) {
       importance += 0.1;
       reasons.push('contains question');
     }
 
-    // Personal information detection
+    // Personal information detection (English + Korean)
     const personalPatterns = [
+      // English
       /my name is/i,
       /i am \w+/i,
       /i live in/i,
       /i work at/i,
       /my birthday/i,
-      /i prefer/i
+      /i prefer/i,
+      // Korean
+      /이름은/i,
+      /이름이/i,
+      /나이는/i,
+      /나이가/i,
+      /살고/i,
+      /사는/i,
+      /거주/i,
+      /직장/i,
+      /회사/i,
+      /좋아/i,
+      /싫어/i
     ];
 
     if (personalPatterns.some(pattern => pattern.test(content))) {
@@ -270,38 +291,120 @@ export class EnhancedMemoryManager {
   }
 
   /**
-   * Basic memory categorization
+   * Basic memory categorization with Korean language support
    */
   private async categorizeMemory(message: Message, existingMemories: UserMemory[]): Promise<string> {
     const content = message.content.toLowerCase();
 
-    // Rule-based categorization
-    if (content.includes('work') || content.includes('job') || content.includes('office') || content.includes('boss')) {
-      return 'work';
-    }
-
-    if (content.includes('family') || content.includes('parent') || content.includes('sibling') || content.includes('child')) {
-      return 'relationships';
-    }
-
-    if (content.includes('like') || content.includes('prefer') || content.includes('favorite') || content.includes('enjoy')) {
-      return 'preferences';
-    }
-
-    if (content.includes('name') || content.includes('birthday') || content.includes('age') || content.includes('address')) {
+    // Personal Information (이름, 나이, 거주지, 연락처 등)
+    const personalInfoPatterns = [
+      // English
+      'name', 'birthday', 'age', 'address', 'phone', 'email', 'contact',
+      'live in', 'born in', 'nationality',
+      // Korean
+      '이름은', '이름이', '나이는', '나이가', '살', '세',
+      '살고', '거주', '주소', '사는', '출생', '태어',
+      '서울', '부산', '대구', '인천', '광주', '대전', '울산', '제주',
+      '전화', '연락처', '이메일', '메일'
+    ];
+    if (personalInfoPatterns.some(pattern => content.includes(pattern))) {
       return 'personal_info';
     }
 
-    if (content.includes('hobby') || content.includes('interest') || content.includes('sport') || content.includes('music')) {
+    // Preferences (좋아하는 것, 싫어하는 것)
+    const preferencesPatterns = [
+      // English
+      'like', 'love', 'prefer', 'favorite', 'enjoy', 'dislike', 'hate', 'don\'t like',
+      // Korean
+      '좋아', '싫어', '선호', '취향', '좋아하', '싫어하', '좋아요', '싫어요',
+      '마음에', '별로', '최애', '애정', '관심'
+    ];
+    if (preferencesPatterns.some(pattern => content.includes(pattern))) {
+      return 'preferences';
+    }
+
+    // Work/Career (직장, 업무)
+    const workPatterns = [
+      // English
+      'work', 'job', 'office', 'boss', 'colleague', 'company', 'career',
+      // Korean
+      '직장', '회사', '업무', '일', '상사', '동료', '직업', '근무',
+      '출근', '퇴근', '프로젝트', '미팅', '회의', '보고'
+    ];
+    if (workPatterns.some(pattern => content.includes(pattern))) {
+      return 'work';
+    }
+
+    // Relationships (가족, 친구, 관계)
+    const relationshipPatterns = [
+      // English
+      'family', 'parent', 'sibling', 'child', 'friend', 'wife', 'husband', 'boyfriend', 'girlfriend',
+      // Korean
+      '가족', '부모', '아버지', '어머니', '형', '누나', '오빠', '언니', '동생',
+      '친구', '남편', '아내', '남자친구', '여자친구', '애인', '배우자'
+    ];
+    if (relationshipPatterns.some(pattern => content.includes(pattern))) {
+      return 'relationships';
+    }
+
+    // Hobbies (취미, 관심사)
+    const hobbyPatterns = [
+      // English
+      'hobby', 'interest', 'sport', 'music', 'game', 'reading', 'movie', 'travel',
+      // Korean
+      '취미', '관심', '운동', '음악', '게임', '독서', '영화', '여행',
+      '등산', '요리', '그림', '사진', '낚시', '골프', '축구', '야구'
+    ];
+    if (hobbyPatterns.some(pattern => content.includes(pattern))) {
       return 'hobbies';
     }
 
-    if (content.includes('health') || content.includes('medical') || content.includes('doctor') || content.includes('medicine')) {
+    // Health (건강, 의료)
+    const healthPatterns = [
+      // English
+      'health', 'medical', 'doctor', 'medicine', 'hospital', 'sick', 'disease',
+      // Korean
+      '건강', '의료', '병원', '의사', '약', '질병', '아프', '치료',
+      '검진', '진료', '증상', '통증'
+    ];
+    if (healthPatterns.some(pattern => content.includes(pattern))) {
       return 'health';
     }
 
-    if (content.includes('goal') || content.includes('plan') || content.includes('future') || content.includes('dream')) {
+    // Goals (목표, 계획)
+    const goalPatterns = [
+      // English
+      'goal', 'plan', 'future', 'dream', 'want to', 'will', 'aspire',
+      // Korean
+      '목표', '계획', '미래', '꿈', '하고 싶', '할 예정', '할 거',
+      '바람', '원하는', '하려고'
+    ];
+    if (goalPatterns.some(pattern => content.includes(pattern))) {
       return 'goals';
+    }
+
+    // Important Dates (날짜, 일정)
+    const datePatterns = [
+      // English
+      'date', 'schedule', 'appointment', 'deadline', 'meeting',
+      // Korean
+      '날짜', '일정', '약속', '마감', '회의', '미팅', '오늘', '내일',
+      '월', '일', '시', '분'
+    ];
+    if (datePatterns.some(pattern => content.includes(pattern))) {
+      return 'important_dates';
+    }
+
+    // Tasks/Todos (할 일, 업무)
+    const taskPatterns = [
+      // English
+      'todo', 'task', 'must', 'need to', 'should', 'have to',
+      // Korean
+      '할 일', '해야', '해야지', '해야 할', '완료', '처리',
+      '신청', '제출', '준비'
+    ];
+    if (taskPatterns.some(pattern => content.includes(pattern))) {
+      return 'tasks';
     }
 
     return 'general';

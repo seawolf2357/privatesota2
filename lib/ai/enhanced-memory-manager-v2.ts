@@ -115,8 +115,12 @@ class RealtimeMemoryProcessor {
     const personalPatterns = [
       /my name is/i, /i am \w+/i, /i live in/i, /i work at/i,
       /my birthday/i, /my phone/i, /my email/i, /my address/i,
-      /제 이름은/i, /제 이름/i, /저는.*입니다/i, /살고 있/i, /에 살/i,
-      /생일은/i, /생일이/i, /전화번호/i, /이메일/i, /주소는/i
+      /제 이름은/i, /제 이름/i, /이름은/i, /이름이/i,
+      /저는.*입니다/i, /나는.*입니다/i,
+      /살고 있/i, /살고있/i, /에 살/i, /사는/i, /거주/i,
+      /서울/i, /부산/i, /대구/i, /인천/i, /광주/i, /대전/i, /울산/i, /제주/i,
+      /생일은/i, /생일이/i, /나이는/i, /나이가/i, /세/i,
+      /전화번호/i, /이메일/i, /주소는/i, /주소가/i
     ];
 
     if (personalPatterns.some(p => p.test(content))) {
@@ -175,9 +179,10 @@ class RealtimeMemoryProcessor {
       reasoning.push('Contains goals or aspirations');
     }
 
-    // Calculate overall importance (add base importance + average of dimensions)
-    const dimensionAverage = Object.values(dimensions).reduce((sum, val) => sum + val, 0) / 6;
-    const importance = Math.min(1.0, baseImportance + dimensionAverage);
+    // Calculate overall importance (use maximum dimension value instead of average)
+    // This ensures that strong signals in any dimension are properly weighted
+    const maxDimensionValue = Math.max(...Object.values(dimensions), 0);
+    const importance = Math.min(1.0, baseImportance + maxDimensionValue);
 
     // Determine action based on adaptive threshold
     const threshold = this.userThresholds.get(userId) || this.DEFAULT_THRESHOLD;
@@ -464,18 +469,55 @@ class DynamicCategoryManager {
 
   private getCategoryKeywords(category: string): string[] {
     const keywordMap: { [key: string]: string[] } = {
-      personal_info: ['name', 'age', 'birthday', 'address', 'phone', 'email'],
-      preferences: ['like', 'prefer', 'favorite', 'enjoy', 'love', 'hate'],
-      relationships: ['family', 'friend', 'partner', 'colleague', 'mother', 'father'],
-      work: ['job', 'work', 'office', 'boss', 'project', 'career'],
-      health: ['health', 'doctor', 'medicine', 'sick', 'exercise', 'diet'],
-      hobbies: ['hobby', 'fun', 'play', 'game', 'sport', 'music'],
-      goals: ['goal', 'plan', 'future', 'dream', 'want', 'will'],
-      education: ['school', 'study', 'learn', 'degree', 'university', 'course'],
-      finance: ['money', 'pay', 'cost', 'budget', 'save', 'invest'],
-      travel: ['travel', 'trip', 'visit', 'vacation', 'flight', 'hotel'],
-      food: ['eat', 'food', 'cook', 'meal', 'restaurant', 'recipe'],
-      entertainment: ['movie', 'show', 'watch', 'listen', 'concert', 'theater']
+      personal_info: [
+        'name', 'age', 'birthday', 'address', 'phone', 'email',
+        '이름', '나이', '생일', '주소', '전화', '이메일', '살고', '사는', '거주',
+        '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세'
+      ],
+      preferences: [
+        'like', 'prefer', 'favorite', 'enjoy', 'love', 'hate',
+        '좋아', '싫어', '선호', '취향', '좋아하', '싫어하', '마음에'
+      ],
+      relationships: [
+        'family', 'friend', 'partner', 'colleague', 'mother', 'father',
+        '가족', '친구', '동료', '아내', '남편', '부모', '자녀', '엄마', '아빠'
+      ],
+      work: [
+        'job', 'work', 'office', 'boss', 'project', 'career',
+        '직장', '회사', '업무', '일', '상사', '프로젝트', '근무', '직업'
+      ],
+      health: [
+        'health', 'doctor', 'medicine', 'sick', 'exercise', 'diet',
+        '건강', '의사', '병원', '약', '운동', '다이어트', '아프', '치료'
+      ],
+      hobbies: [
+        'hobby', 'fun', 'play', 'game', 'sport', 'music',
+        '취미', '재미', '놀이', '게임', '운동', '음악', '여가'
+      ],
+      goals: [
+        'goal', 'plan', 'future', 'dream', 'want', 'will',
+        '목표', '계획', '미래', '꿈', '하고 싶', '할 예정', '바람'
+      ],
+      education: [
+        'school', 'study', 'learn', 'degree', 'university', 'course',
+        '학교', '공부', '배우', '학위', '대학', '수업', '교육'
+      ],
+      finance: [
+        'money', 'pay', 'cost', 'budget', 'save', 'invest',
+        '돈', '돈벌', '비용', '예산', '저축', '투자', '월급'
+      ],
+      travel: [
+        'travel', 'trip', 'visit', 'vacation', 'flight', 'hotel',
+        '여행', '여행가', '방문', '휴가', '비행기', '호텔'
+      ],
+      food: [
+        'eat', 'food', 'cook', 'meal', 'restaurant', 'recipe',
+        '먹', '음식', '요리', '식사', '식당', '레시피', '맛있'
+      ],
+      entertainment: [
+        'movie', 'show', 'watch', 'listen', 'concert', 'theater',
+        '영화', '쇼', '보', '듣', '콘서트', '공연', '드라마'
+      ]
     };
 
     return keywordMap[category] || [];
@@ -483,12 +525,30 @@ class DynamicCategoryManager {
 
   private getCategoryPatterns(category: string): RegExp[] {
     const patternMap: { [key: string]: RegExp[] } = {
-      personal_info: [/my name is/i, /i am \d+ years/i, /born in/i],
-      preferences: [/i (like|love|prefer)/i, /favorite \w+ is/i],
-      relationships: [/my \w+ is/i, /have \d+ children/i],
-      work: [/work at/i, /job is/i, /employed by/i],
-      health: [/diagnosed with/i, /taking medication/i],
-      goals: [/want to/i, /planning to/i, /goal is to/i]
+      personal_info: [
+        /my name is/i, /i am \d+ years/i, /born in/i, /i live in/i,
+        /이름은/i, /이름이/i, /나이는/i, /살고 있/i, /사는/i, /에 살/i
+      ],
+      preferences: [
+        /i (like|love|prefer)/i, /favorite \w+ is/i,
+        /좋아/i, /싫어/i, /선호/i
+      ],
+      relationships: [
+        /my \w+ is/i, /have \d+ children/i,
+        /가족/i, /친구/i, /부모/i
+      ],
+      work: [
+        /work at/i, /job is/i, /employed by/i,
+        /회사/i, /직장/i, /근무/i
+      ],
+      health: [
+        /diagnosed with/i, /taking medication/i,
+        /아프/i, /병원/i, /건강/i
+      ],
+      goals: [
+        /want to/i, /planning to/i, /goal is to/i,
+        /하고 싶/i, /목표/i, /계획/i
+      ]
     };
 
     return patternMap[category] || [];
